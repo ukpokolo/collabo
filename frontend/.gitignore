@@ -1,0 +1,22 @@
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# Contains NEXT_PUBLIC_* values for the local stack.
+.env*.local
+
+/coverage
+.vercel
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.pem

@@ -1,0 +1,31 @@
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+
+# Secrets: APP_KEY, mail credentials, Reverb app secret.
+.env
+.env.*
+!.env.example
+auth.json
+/storage/*.key
+
+# Local SQLite database.
+/database/*.sqlite
+/database/*.sqlite-journal
+/database/*.sqlite-shm
+/database/*.sqlite-wal
+
+/.phpunit.cache
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
