@@ -85,11 +85,13 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'http'),
                     'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
                 ],
-                // Reverb compares these against the HOST only — it runs the
-                // incoming Origin header through parse_url(..., PHP_URL_HOST)
-                // first. So entries must be hosts ("localhost", "*.example.com"),
-                // never full URLs; "http://localhost:3000" can never match.
-                'allowed_origins' => ['*'],
+                // Compared against the HOST only: Reverb runs the incoming
+                // Origin header through parse_url(..., PHP_URL_HOST) first.
+                // Entries must be hosts ("collabo.vercel.app", "*.vercel.app"),
+                // never full URLs — "https://collabo.vercel.app" can't match.
+                'allowed_origins' => array_filter(
+                    explode(',', (string) env('REVERB_ALLOWED_ORIGINS', '*'))
+                ),
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),

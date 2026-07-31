@@ -1,0 +1,186 @@
+# Render Blueprint: API + Reverb + queue worker + Postgres.
+# Render -> New -> Blueprint -> point at this repo.
+#
+# Values marked `sync: false` are prompted for on first deploy and never
+# stored in git. Everything else is derived.
+
+databases:
+  - name: collabo-db
+    plan: free
+    databaseName: collabo
+    user: collabo
+
+services:
+  # ---------------------------------------------------------------- API
+  - type: web
+    name: collabo-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /up
+    envVars:
+      - key: APP_NAME
+        value: Collabo
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      # php artisan key:generate --show  (must start with "base64:")
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        fromService: { type: web, name: collabo-api, property: hostport }
+      # Your Vercel URL. Used by config/cors.php.
+      - key: APP_FRONTEND_URL
+        sync: false
+
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase: { name: collabo-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: collabo-db, property: port }
+      - key: DB_DATABASE
+        fromDatabase: { name: collabo-db, property: database }
+      - key: DB_USERNAME
+        fromDatabase: { name: collabo-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: collabo-db, property: password }
+
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: BROADCAST_CONNECTION
+        value: reverb
+
+      # Shared with the Reverb service and the worker.
+      - key: REVERB_APP_ID
+        generateValue: true
+      - key: REVERB_APP_KEY
+        generateValue: true
+      - key: REVERB_APP_SECRET
+        generateValue: true
+      # Where the API publishes events to. Render terminates TLS on 443.
+      - key: REVERB_HOST
+        fromService: { type: web, name: collabo-reverb, property: host }
+      - key: REVERB_PORT
+        value: 443
+      - key: REVERB_SCHEME
+        value: https
+
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+
+  # ------------------------------------------------------------- Reverb
+  # Its own web service: Render exposes one port per service, and the
+  # WebSocket server must own that port.
+  - type: web
+    name: collabo-reverb
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # $PORT is Render's; REVERB_SERVER_HOST must be an IP, never a hostname.
+    dockerCommand: php artisan reverb:start --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_KEY
+        fromService: { type: web, name: collabo-api, envVarKey: APP_KEY }
+      - key: APP_ENV
+        value: production
+      - key: REVERB_APP_ID
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_ID }
+      - key: REVERB_APP_KEY
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_KEY }
+      - key: REVERB_APP_SECRET
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_SECRET }
+      # Comma-separated HOSTS, not URLs. e.g. collabo.vercel.app
+      - key: REVERB_ALLOWED_ORIGINS
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase: { name: collabo-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: collabo-db, property: port }
+      - key: DB_DATABASE
+        fromDatabase: { name: collabo-db, property: database }
+      - key: DB_USERNAME
+        fromDatabase: { name: collabo-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: collabo-db, property: password }
+
+  # ------------------------------------------------------------- Worker
+  # Without this, broadcasts and jobs queue up and never send.
+  - type: worker
+    name: collabo-worker
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerCommand: php artisan queue:work --tries=3 --timeout=90 --sleep=1
+    envVars:
+      - key: APP_KEY
+        fromService: { type: web, name: collabo-api, envVarKey: APP_KEY }
+      - key: APP_ENV
+        value: production
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: BROADCAST_CONNECTION
+        value: reverb
+      - key: REVERB_APP_ID
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_ID }
+      - key: REVERB_APP_KEY
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_KEY }
+      - key: REVERB_APP_SECRET
+        fromService: { type: web, name: collabo-api, envVarKey: REVERB_APP_SECRET }
+      - key: REVERB_HOST
+        fromService: { type: web, name: collabo-reverb, property: host }
+      - key: REVERB_PORT
+        value: 443
+      - key: REVERB_SCHEME
+        value: https
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase: { name: collabo-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: collabo-db, property: port }
+      - key: DB_DATABASE
+        fromDatabase: { name: collabo-db, property: database }
+      - key: DB_USERNAME
+        fromDatabase: { name: collabo-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: collabo-db, property: password }
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
