@@ -1,5 +1,5 @@
 import { http } from '@/lib/api/http';
-import type { User } from '@/lib/types';
+import type { User } from '@/features/users/types';
 
 export interface AuthSuccess {
   user: User;

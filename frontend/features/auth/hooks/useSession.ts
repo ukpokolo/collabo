@@ -4,13 +4,13 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi, type AuthSuccess } from '@/features/auth/api';
-import { QUERY_KEYS } from '@/lib/constants';
 import { clearToken, hasToken, setToken } from '@/features/auth/token';
 import { disconnectEcho } from '@/lib/echo';
+import { sessionKeys } from '@/features/auth/keys';
 
 export function useSession() {
   const query = useQuery({
-    queryKey: QUERY_KEYS.session,
+    queryKey: sessionKeys.current,
     queryFn: ({ signal }) => authApi.me(signal),
     enabled: hasToken(),
     retry: false,
@@ -31,7 +31,7 @@ export function useAuthSuccess() {
   return useCallback(
     (result: AuthSuccess, redirectTo = '/') => {
       setToken(result.token);
-      client.setQueryData(QUERY_KEYS.session, result.user);
+      client.setQueryData(sessionKeys.current, result.user);
       router.replace(redirectTo);
     },
     [client, router],

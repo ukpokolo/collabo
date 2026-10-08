@@ -5,7 +5,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { Board } from '@/features/board/components/Board';
 import { useDebounced } from '@/hooks/useDebounced';
 import { useBoardStore } from '@/features/board/store';
-import type { TaskFilters } from '@/lib/types';
+import type { TaskFilters } from '@/features/tasks/types';
 
 /**
  * Owns the filter state shared between the top bar (which edits it) and the

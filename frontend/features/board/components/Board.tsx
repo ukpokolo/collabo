@@ -17,13 +17,18 @@ import { BoardColumn } from '@/features/board/components/BoardColumn';
 import { TaskCardView } from '@/features/tasks/components/TaskCard';
 import { Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { COLUMNS } from '@/lib/constants';
+import { COLUMNS } from '@/features/board/constants';
 import { useBoardStore } from '@/features/board/store';
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
 import { useUsers } from '@/features/tasks/hooks/useTask';
-import { TASK_STATUSES, type Task, type TaskFilters, type TaskStatus } from '@/lib/types';
+import {
+  TASK_STATUSES,
+  type Task,
+  type TaskFilters,
+  type TaskStatus,
+} from '@/features/tasks/types';
 
 function isTaskStatus(value: unknown): value is TaskStatus {
   return typeof value === 'string' && (TASK_STATUSES as readonly string[]).includes(value);

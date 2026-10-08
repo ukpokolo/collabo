@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { TaskStatus } from '@/lib/types';
+import type { TaskStatus } from '@/features/tasks/types';
 
 /**
  * Ephemeral UI state. Holds no task data — tasks are server state and live in

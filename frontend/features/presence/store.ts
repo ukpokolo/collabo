@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { PresenceMember } from '@/lib/types';
+import type { PresenceMember } from '@/features/presence/types';
 
 export type PresenceStatus = 'idle' | 'connecting' | 'online' | 'unauthorized';
 

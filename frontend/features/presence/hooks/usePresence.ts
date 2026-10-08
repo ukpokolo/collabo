@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { getEcho } from '@/lib/echo';
-import { CHANNELS } from '@/lib/constants';
+import { CHANNELS } from '@/lib/channels';
 import { usePresenceStore } from '@/features/presence/store';
-import type { PresenceMember } from '@/lib/types';
+import type { PresenceMember } from '@/features/presence/types';
 
 export function usePresence() {
   const { setMembers, addMember, removeMember, setStatus, reset } = usePresenceStore();

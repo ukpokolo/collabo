@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/Surface';
 import { IconButton } from '@/components/ui/IconButton';
 import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
-import type { ColumnConfig } from '@/lib/constants';
-import type { Task, TaskStatus, User } from '@/lib/types';
+import type { ColumnConfig } from '@/features/board/constants';
+import type { Task, TaskStatus } from '@/features/tasks/types';
+import type { User } from '@/features/users/types';
 
 interface BoardColumnProps {
   column: ColumnConfig;
