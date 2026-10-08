@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Domain\Auth\Http\Controllers;
+
+use App\Domain\Auth\Http\Requests\RegisterRequest;
+use App\Domain\Auth\Models\OtpCode;
+use App\Domain\Auth\Services\OtpService;
+use App\Domain\Users\Models\User;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
+
+class RegisterController extends Controller
+{
+    public function __construct(private readonly OtpService $otp) {}
+
+    /** No token is issued until the emailed code is verified. */
+    public function store(RegisterRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+
+        $this->otp->send($user->email, OtpCode::PURPOSE_VERIFY_EMAIL, $user->name);
+
+        return response()->json([
+            'message' => 'Account created. Check your email for a 6-digit verification code.',
+            'email' => $user->email,
+        ], Response::HTTP_CREATED);
+    }
+}

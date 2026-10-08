@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Mail\OtpMail;
-use App\Models\OtpCode;
-use App\Models\User;
+use App\Domain\Auth\Mail\OtpMail;
+use App\Domain\Auth\Models\OtpCode;
+use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;

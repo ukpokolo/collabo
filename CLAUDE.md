@@ -35,6 +35,23 @@ npm run build
 
 ## Architecture
 
+### Backend structure: domains
+
+```
+backend/app/Domain/
+  Auth/   Http/(Controllers, Requests)  Models/OtpCode  Services/OtpService  Mail/OtpMail  routes.php
+  Tasks/  Http/Controllers  Models/Task  Events/TaskUpdated  Jobs/NotifyTaskCompleted  routes.php
+  Users/  Http/Controllers  Models/User  routes.php
+```
+
+`routes/api.php` only sets the prefix and middleware; each domain owns its `routes.php`. Config, migrations, factories, seeders and views stay in Laravel's standard locations. `LatestOtpCommand` stays in `app/Console/Commands` because Laravel only auto-discovers commands there.
+
+Things that are easy to break:
+
+- **Models under `Domain/` need `newFactory()`.** Factory discovery is namespace-based and does not know about `Domain/`.
+- **`AppServiceProvider` pins `Relation::morphMap(['App\\Models\\User' => User::class])`.** `personal_access_tokens.tokenable_type` stores that legacy string for every token issued before `User` moved. Remove the map and every existing login returns 500 (`LoginTest` covers it).
+- **Queued jobs serialise class names.** Drain the queue (`queue:work --stop-when-empty`) before deploying a namespace move, or in-flight `TaskUpdated`/`NotifyTaskCompleted` jobs fail with a missing class. The wire event name is unaffected (`TaskUpdated::broadcastAs()` is explicit).
+
 ### Frontend structure: feature folders
 
 ```

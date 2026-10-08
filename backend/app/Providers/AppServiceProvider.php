@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Users\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
         if (PHP_OS_FAMILY === 'Windows') {
             ServeCommand::$passthroughVariables[] = 'SystemRoot';
         }
+
+        // personal_access_tokens.tokenable_type holds 'App\Models\User' for every
+        // token issued before User moved to Domain/Users. Pinning that string
+        // keeps existing logins valid and stops the stored value from changing
+        // with future namespace moves.
+        Relation::morphMap(['App\\Models\\User' => User::class]);
 
         $this->configureRateLimiting();
     }
