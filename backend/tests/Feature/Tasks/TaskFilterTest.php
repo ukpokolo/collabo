@@ -39,7 +39,7 @@ class TaskFilterTest extends TestCase
 
     private function titles(string $query = ''): array
     {
-        return collect($this->getJson("/api/boards/{$this->board->id}/tasks".$query)->assertOk()->json())->pluck('title')->sort()->values()->all();
+        return collect($this->getJson("/api/boards/{$this->board->id}/tasks".$query)->assertOk()->json('data'))->pluck('title')->sort()->values()->all();
     }
 
     public function test_search_matches_title_and_description_case_insensitively(): void
