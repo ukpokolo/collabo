@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services;
+namespace App\Domain\Auth\Services;
 
-use App\Mail\OtpMail;
-use App\Models\OtpCode;
+use App\Domain\Auth\Mail\OtpMail;
+use App\Domain\Auth\Models\OtpCode;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 

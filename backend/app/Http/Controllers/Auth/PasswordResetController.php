@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Domain\Auth\Models\OtpCode;
+use App\Domain\Auth\Services\OtpService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\EmailOnlyRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Models\OtpCode;
 use App\Models\User;
-use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;

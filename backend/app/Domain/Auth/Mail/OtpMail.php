@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Mail;
+namespace App\Domain\Auth\Mail;
 
-use App\Models\OtpCode;
+use App\Domain\Auth\Models\OtpCode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
