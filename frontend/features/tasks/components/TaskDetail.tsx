@@ -10,13 +10,15 @@ import { PresenceStack } from '@/features/presence/components/PresenceStack';
 import { Button } from '@/components/ui/Button';
 import { SectionLabel, Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { useTask, useUsers } from '@/features/tasks/hooks/useTask';
+import { useTask } from '@/features/tasks/hooks/useTask';
+import { useBoardMembers } from '@/features/board/hooks/useBoards';
+import { BoardProvider } from '@/features/board/context';
 import { useDeleteTask, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
 import { ApiError } from '@/lib/http';
 import { relativeTime } from '@/lib/utils';
-import type { TaskStatus, UpdateTaskInput } from '@/features/tasks/types';
+import type { Task, TaskStatus, UpdateTaskInput } from '@/features/tasks/types';
 
 function DetailHeader({ children }: { children?: React.ReactNode }) {
   return (
@@ -26,10 +28,10 @@ function DetailHeader({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function BackLink() {
+function BackLink({ boardId }: { boardId?: number }) {
   return (
     <Link
-      href="/"
+      href={boardId ? `/boards/${boardId}` : '/'}
       className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-sm text-foreground-muted transition-colors hover:bg-surface-muted"
     >
       <ArrowLeft className="h-4 w-4" />
@@ -41,28 +43,6 @@ function BackLink() {
 export function TaskDetail({ taskId }: { taskId: number }) {
   const router = useRouter();
   const { data: task, isLoading, isError, error, refetch } = useTask(taskId);
-  const { data: users } = useUsers();
-  const { mutate: updateTask } = useUpdateTask();
-  const { mutate: deleteTask } = useDeleteTask();
-
-  useTaskBroadcast();
-  usePresence();
-
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (!task) return;
-    setTitle(task.title);
-    setDescription(task.description ?? '');
-  }, [task?.id, task?.title, task?.description]);
-
-  const commit = (patch: UpdateTaskInput) => {
-    updateTask({ id: taskId, input: patch });
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1500);
-  };
 
   if (isLoading) {
     return (
@@ -126,11 +106,46 @@ export function TaskDetail({ taskId }: { taskId: number }) {
     );
   }
 
+  // The task is the only thing that knows which board it is on, so the
+  // board context starts here and everything that needs it sits below.
+  return (
+    <BoardProvider boardId={task.board_id}>
+      <TaskDetailBody task={task} />
+    </BoardProvider>
+  );
+}
+
+function TaskDetailBody({ task }: { task: Task }) {
+  const router = useRouter();
+  const taskId = task.id;
+  const { data: users } = useBoardMembers();
+  const { mutate: updateTask } = useUpdateTask();
+  const { mutate: deleteTask } = useDeleteTask();
+
+  useTaskBroadcast();
+  usePresence();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!task) return;
+    setTitle(task.title);
+    setDescription(task.description ?? '');
+  }, [task?.id, task?.title, task?.description]);
+
+  const commit = (patch: UpdateTaskInput) => {
+    updateTask({ id: taskId, input: patch });
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1500);
+  };
+
   return (
     <>
       <DetailHeader>
         <div className="flex min-w-0 items-center gap-3">
-          <BackLink />
+          <BackLink boardId={task.board_id} />
           <span className="font-mono text-xs text-foreground-subtle">#{task.id}</span>
           {saved && (
             <span className="flex animate-fade-in items-center gap-1 text-xs font-medium text-success-foreground">
@@ -147,7 +162,7 @@ export function TaskDetail({ taskId }: { taskId: number }) {
             size="sm"
             onClick={() => {
               deleteTask(task.id);
-              router.push('/');
+              router.push(`/boards/${task.board_id}`);
             }}
           >
             <Trash2 className="h-3.5 w-3.5" />

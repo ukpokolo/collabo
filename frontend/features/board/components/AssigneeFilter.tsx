@@ -2,12 +2,12 @@
 
 import { UserCircle2, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
-import { useUsers } from '@/features/tasks/hooks/useTask';
+import { useBoardMembers } from '@/features/board/hooks/useBoards';
 import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
 
 export function AssigneeFilter() {
-  const { data: users } = useUsers();
+  const { data: users } = useBoardMembers();
   const { assignees, toggleAssignee, clearFilters, search } = useBoardStore();
 
   const active = assignees.length > 0;

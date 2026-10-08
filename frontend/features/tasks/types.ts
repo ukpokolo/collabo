@@ -6,6 +6,7 @@ export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 export interface Task {
   id: number;
+  board_id: number;
   title: string;
   description: string | null;
   status: TaskStatus;

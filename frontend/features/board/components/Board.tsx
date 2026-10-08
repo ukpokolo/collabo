@@ -22,7 +22,7 @@ import { useBoardStore } from '@/features/board/store';
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
-import { useUsers } from '@/features/tasks/hooks/useTask';
+import { useBoardMembers } from '@/features/board/hooks/useBoards';
 import {
   TASK_STATUSES,
   type Task,
@@ -37,7 +37,7 @@ function isTaskStatus(value: unknown): value is TaskStatus {
 export function Board({ filters = {} }: { filters?: TaskFilters }) {
   const router = useRouter();
   const { data: tasks, isLoading, isError, error, refetch, isFetching } = useTasks(filters);
-  const { data: users } = useUsers();
+  const { data: users } = useBoardMembers();
   const { mutate: createTask } = useCreateTask();
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
