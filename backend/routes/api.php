@@ -8,6 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(app_path('Domain/Auth/routes.php'));
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::group([], app_path('Domain/Users/routes.php'));
+    Route::group([], app_path('Domain/Boards/routes.php'));
     Route::group([], app_path('Domain/Tasks/routes.php'));
 });

@@ -6,15 +6,20 @@ use App\Domain\Auth\Http\Requests\EmailOnlyRequest;
 use App\Domain\Auth\Http\Requests\OtpRequest;
 use App\Domain\Auth\Models\OtpCode;
 use App\Domain\Auth\Services\OtpService;
+use App\Domain\Boards\Services\BoardService;
 use App\Domain\Users\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class OtpController extends Controller
 {
-    public function __construct(private readonly OtpService $otp) {}
+    public function __construct(
+        private readonly OtpService $otp,
+        private readonly BoardService $boards,
+    ) {}
 
     public function verifyEmail(OtpRequest $request): JsonResponse
     {
@@ -30,6 +35,9 @@ class OtpController extends Controller
 
         if (! $user->email_verified_at) {
             $user->forceFill(['email_verified_at' => now()])->save();
+
+            // First verification: give them somewhere to land.
+            $this->boards->createFor($user, Str::limit($user->name, 60, '')."'s board");
         }
 
         return response()->json([
