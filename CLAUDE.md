@@ -31,7 +31,7 @@ npm run build
 
 **All four processes are required for realtime to work.** Broadcasting is queued, so without `queue:work` the HTTP request still returns 200 and the event sits unsent in the `jobs` table.
 
-**There is no test suite.** No `tests/` directory, no `phpunit.xml`, no frontend test runner, no ESLint config — `phpunit` is in `require-dev` but unconfigured, and `npm run lint` will prompt to create a config. Verify changes with `npm run typecheck`, `npm run build`, `php -l`, and by exercising the API.
+**Backend tests:** `cd backend && php artisan test` (PHPUnit, in-memory SQLite locally; CI runs them against Postgres). They cover auth, tasks/filters and channel authorization. **There is still no frontend test runner or ESLint config** — verify frontend changes with `npm run typecheck` and `npm run build`. `NotifyTaskCompleted` sleeps, so fake the bus in tests that move a task to `done`.
 
 ## Architecture
 

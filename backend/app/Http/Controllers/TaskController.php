@@ -22,12 +22,14 @@ class TaskController extends Controller
         $tasks = Task::query()
             ->with('assignee')
             ->when($filters['search'] ?? null, function ($query, string $search) {
-                // Escape LIKE wildcards so a literal % doesn't match everything.
-                $term = '%'.addcslashes($search, '%_\\').'%';
+                // Escape LIKE wildcards with an explicit ESCAPE character:
+                // SQLite has no default one, and Postgres LIKE is case-sensitive,
+                // so both sides are lowercased for a portable match.
+                $term = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower($search)).'%';
 
                 $query->where(function ($q) use ($term) {
-                    $q->where('title', 'like', $term)
-                        ->orWhere('description', 'like', $term);
+                    $q->whereRaw("LOWER(title) LIKE ? ESCAPE '!'", [$term])
+                        ->orWhereRaw("LOWER(description) LIKE ? ESCAPE '!'", [$term]);
                 });
             })
             ->when($filters['assigned_to'] ?? null, function ($query, string $assigned) {
