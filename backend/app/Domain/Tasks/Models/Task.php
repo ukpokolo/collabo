@@ -3,11 +3,14 @@
 namespace App\Domain\Tasks\Models;
 
 use App\Domain\Boards\Models\Board;
+use App\Domain\Tasks\Policies\TaskPolicy;
 use App\Domain\Users\Models\User;
 use Database\Factories\TaskFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[UsePolicy(TaskPolicy::class)]
 class Task extends Model
 {
     use HasFactory;

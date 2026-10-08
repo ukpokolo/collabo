@@ -110,6 +110,8 @@ class LoginTest extends TestCase
     {
         $this->getJson('/api/auth/user')->assertUnauthorized();
         $this->getJson('/api/users')->assertUnauthorized();
-        $this->getJson('/api/tasks')->assertUnauthorized();
+        $this->getJson('/api/boards')->assertUnauthorized();
+        $this->getJson('/api/boards/1/tasks')->assertUnauthorized();
+        $this->getJson('/api/tasks/1')->assertUnauthorized();
     }
 }

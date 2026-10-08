@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Boards\Models\Board;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,6 +26,7 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
+            'board_id' => Board::factory()->withOwnerMember(),
             'title' => fake()->sentence(4),
             'status' => fake()->randomElement(Task::STATUSES),
             'assigned_to' => null,

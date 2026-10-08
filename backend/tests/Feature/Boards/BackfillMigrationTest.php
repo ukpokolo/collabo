@@ -18,8 +18,12 @@ class BackfillMigrationTest extends TestCase
 
     private const MIGRATION = 'database/migrations/2026_10_08_000003_add_board_id_to_tasks_table.php';
 
+    private const NOT_NULL_MIGRATION = 'database/migrations/2026_10_08_000004_require_board_id_on_tasks.php';
+
     private function rollbackBackfill(): void
     {
+        // NOT NULL goes first: it depends on the column the backfill adds.
+        Artisan::call('migrate:rollback', ['--path' => self::NOT_NULL_MIGRATION, '--realpath' => false]);
         Artisan::call('migrate:rollback', ['--path' => self::MIGRATION, '--realpath' => false]);
     }
 
