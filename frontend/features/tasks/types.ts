@@ -16,6 +16,13 @@ export interface Task {
   assignee: User | null;
 }
 
+/** One page of GET /api/boards/{id}/tasks (keyset-paged on id, newest id first). */
+export interface TaskPage {
+  data: Task[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
 export interface CreateTaskInput {
   title: string;
   description?: string | null;

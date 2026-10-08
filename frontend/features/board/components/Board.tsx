@@ -19,7 +19,14 @@ import { Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { COLUMNS } from '@/features/board/constants';
 import { useBoardStore } from '@/features/board/store';
-import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
+import {
+  MAX_TASKS_LOADED,
+  useCreateTask,
+  useDeleteTask,
+  useTasks,
+  useUpdateTask,
+} from '@/features/tasks/hooks/useTasks';
+import { Alert } from '@/components/ui/Alert';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
 import { useBoardMembers, useCurrentBoard } from '@/features/board/hooks/useBoards';
@@ -106,6 +113,8 @@ export function Board({ filters = {} }: { filters?: TaskFilters }) {
     );
   }
 
+  const truncated = visible.length >= MAX_TASKS_LOADED;
+
   return (
     <DndContext
       sensors={sensors}
@@ -114,6 +123,14 @@ export function Board({ filters = {} }: { filters?: TaskFilters }) {
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveTaskId(null)}
     >
+      {truncated && (
+        <div className="px-3 pt-3 sm:px-5 sm:pt-5">
+          <Alert tone="error">
+            Showing the {MAX_TASKS_LOADED.toLocaleString()} most recent tasks. Use search or the
+            assignee filter to find older ones.
+          </Alert>
+        </div>
+      )}
       <div className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto p-3 sm:snap-none sm:gap-4 sm:p-5">
         {COLUMNS.map((column) => (
           <BoardColumn
