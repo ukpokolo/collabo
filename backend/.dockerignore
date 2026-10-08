@@ -2,7 +2,6 @@ vendor
 node_modules
 .env
 .env.*
-!.env.example
 database/*.sqlite
 storage/logs/*
 storage/framework/cache/data/*
@@ -13,3 +12,7 @@ bootstrap/cache/*.php
 .gitignore
 Dockerfile
 .dockerignore
+tests
+phpunit.xml
+.phpunit.cache
+

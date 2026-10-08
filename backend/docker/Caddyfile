@@ -1,0 +1,25 @@
+{
+	# Nothing here needs the admin API, and TLS is terminated by the platform.
+	admin off
+	auto_https off
+
+	frankenphp {
+		# Small hosts: bound the worker threads instead of scaling with CPUs.
+		num_threads 4
+		max_threads 8
+	}
+}
+
+:{$PORT:8000} {
+	root * /app/public
+	encode zstd gzip
+
+	header -Server
+
+	# Stop the request being buffered forever if a client stalls.
+	request_body {
+		max_size 2MB
+	}
+
+	php_server
+}
