@@ -41,7 +41,8 @@ export function useBoardMembers() {
   });
 }
 
-export function useCreateBoard() {
+/** Doesn't need a board in context, so it works on the "/" and switcher screens. */
+export function useCreateBoardUnscoped() {
   const client = useQueryClient();
 
   return useMutation({
