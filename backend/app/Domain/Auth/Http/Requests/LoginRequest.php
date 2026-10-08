@@ -1,13 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Domain\Auth\Http\Requests;
 
-use App\Domain\Auth\Models\OtpCode;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-/** Used by forgot-password and resend-otp. */
-class EmailOnlyRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,10 +14,8 @@ class EmailOnlyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Deliberately NOT `exists:users` — that would turn this endpoint
-            // into an account-enumeration oracle.
             'email' => ['required', 'string', 'email'],
-            'purpose' => ['sometimes', Rule::in(OtpCode::PURPOSES)],
+            'password' => ['required', 'string'],
         ];
     }
 

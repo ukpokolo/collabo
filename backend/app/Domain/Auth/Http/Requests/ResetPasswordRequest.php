@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Domain\Auth\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
-class LoginRequest extends FormRequest
+class ResetPasswordRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,7 +16,8 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'code' => ['required', 'string', 'digits:6'],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ];
     }
 
@@ -23,6 +25,7 @@ class LoginRequest extends FormRequest
     {
         $this->merge([
             'email' => is_string($this->email) ? strtolower(trim($this->email)) : $this->email,
+            'code' => is_string($this->code) ? trim($this->code) : $this->code,
         ]);
     }
 }

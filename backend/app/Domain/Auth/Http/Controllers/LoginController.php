@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Domain\Auth\Http\Controllers;
 
+use App\Domain\Auth\Http\Requests\LoginRequest;
 use App\Domain\Auth\Models\OtpCode;
 use App\Domain\Auth\Services\OtpService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

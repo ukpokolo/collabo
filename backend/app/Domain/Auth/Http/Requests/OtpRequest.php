@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Domain\Auth\Http\Requests;
 
 use App\Domain\Auth\Models\OtpCode;
 use Illuminate\Foundation\Http\FormRequest;

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Domain\Auth\Http\Controllers;
 
+use App\Domain\Auth\Http\Requests\EmailOnlyRequest;
+use App\Domain\Auth\Http\Requests\OtpRequest;
 use App\Domain\Auth\Models\OtpCode;
 use App\Domain\Auth\Services\OtpService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\EmailOnlyRequest;
-use App\Http\Requests\Auth\OtpRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
