@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { getEcho } from '@/lib/echo';
 import { CHANNELS } from '@/lib/constants';
-import { usePresenceStore } from '@/store/usePresenceStore';
+import { usePresenceStore } from '@/features/presence/store';
 import type { PresenceMember } from '@/lib/types';
 
 export function usePresence() {

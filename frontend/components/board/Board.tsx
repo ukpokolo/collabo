@@ -21,7 +21,7 @@ import { COLUMNS } from '@/lib/constants';
 import { useBoardStore } from '@/store/useBoardStore';
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/hooks/useTasks';
 import { useTaskBroadcast } from '@/hooks/useTaskBroadcast';
-import { usePresence } from '@/hooks/usePresence';
+import { usePresence } from '@/features/presence/hooks/usePresence';
 import { useUsers } from '@/hooks/useTask';
 import { TASK_STATUSES, type Task, type TaskFilters, type TaskStatus } from '@/lib/types';
 

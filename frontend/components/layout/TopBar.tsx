@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDays, ChevronRight, LayoutGrid, List, Loader2, Menu, Search } from 'lucide-react';
-import { PresenceStack } from '@/components/layout/PresenceStack';
+import { PresenceStack } from '@/features/presence/components/PresenceStack';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { AssigneeFilter } from '@/components/board/AssigneeFilter';
 import { IconButton } from '@/components/ui/IconButton';

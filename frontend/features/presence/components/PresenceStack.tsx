@@ -1,7 +1,7 @@
 'use client';
 
 import { AvatarStack } from '@/components/ui/Avatar';
-import { usePresenceStore } from '@/store/usePresenceStore';
+import { usePresenceStore } from '@/features/presence/store';
 import { useSession } from '@/features/auth/hooks/useSession';
 
 export function PresenceStack() {
