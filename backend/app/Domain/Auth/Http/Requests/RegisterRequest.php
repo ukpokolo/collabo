@@ -16,9 +16,11 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:80'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            // No `unique` rule: it would tell a stranger which addresses have accounts.
+            // RegisterController handles an existing address without revealing it.
+            'email' => ['required', 'string', 'email', 'max:255'],
             // `confirmed` requires a matching password_confirmation field.
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'password' => ['required', 'confirmed', Password::min(8)->max(72)->letters()->numbers()],
         ];
     }
 

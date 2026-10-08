@@ -51,8 +51,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth-login', fn (Request $request) => Limit::perMinute(5)
             ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
 
-        RateLimiter::for('auth-register', fn (Request $request) => Limit::perMinute(5)
-            ->by($request->ip()));
+        // Per IP, and per address: the response is the same for new and existing
+        // accounts, so without the second limit this could be used to mail one
+        // person repeatedly.
+        RateLimiter::for('auth-register', fn (Request $request) => [
+            Limit::perMinute(5)->by($request->ip()),
+            Limit::perHour(5)->by('email|'.strtolower((string) $request->input('email'))),
+        ]);
 
         RateLimiter::for('auth-verify', fn (Request $request) => Limit::perMinute(10)
             ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));

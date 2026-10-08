@@ -60,4 +60,26 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Board::class, 'board_user')->withPivot('role')->withTimestamps();
     }
+
+    /** Most tokens one account keeps; signing in again on an extra device retires the oldest. */
+    public const MAX_TOKENS = 20;
+
+    /**
+     * Issue an API token, tidying this user's old ones first. Pruning here, at
+     * sign-in, means expired rows are cleaned up without needing a scheduler.
+     */
+    public function issueToken(): string
+    {
+        $this->tokens()
+            ->where('created_at', '<', now()->subMinutes((int) config('sanctum.expiration')))
+            ->delete();
+
+        $surplus = $this->tokens()->count() - (self::MAX_TOKENS - 1);
+
+        if ($surplus > 0) {
+            $this->tokens()->orderBy('id')->limit($surplus)->get()->each->delete();
+        }
+
+        return $this->createToken('collabo')->plainTextToken;
+    }
 }
