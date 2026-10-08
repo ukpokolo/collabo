@@ -16,7 +16,7 @@ class NotifyTaskCompleted implements ShouldQueue
 
     public Task $task;
 
-   public function __construct(Task $task)
+    public function __construct(Task $task)
     {
         $this->task = $task;
     }
