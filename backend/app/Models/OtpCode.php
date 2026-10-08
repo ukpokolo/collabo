@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 class OtpCode extends Model
 {
     public const PURPOSE_VERIFY_EMAIL = 'verify_email';
+
     public const PURPOSE_RESET_PASSWORD = 'reset_password';
 
     public const PURPOSES = [
