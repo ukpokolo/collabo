@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Collabo is a real-time kanban board: a Laravel 12 API (`backend/`) and a Next.js 15 (React 19) App Router frontend (`frontend/`), connected by Laravel Reverb WebSockets.
 
-This file is the only current documentation. The original scaffold's `README.md` files and `LEARNING.md` were removed because they described a superseded design (Laravel 11, a public `board.1` channel, no authentication).
+Where to look: `README.md` (run, test, layout, known limitations), `docs/deployment.md` (free-plan deployment and operations), `docs/launch-checklist.md` (what is verified, what is a known gap, what is yours to do), `e2e/README.md` (the browser suite). This file holds the conventions and the non-obvious things that are easy to break. The original scaffold's READMEs and `LEARNING.md` were removed because they described a superseded design (Laravel 11, a public `board.1` channel, no authentication).
 
 ## Commands
 
@@ -32,6 +32,8 @@ npm run build
 **All four processes are required for realtime to work.** Broadcasting is queued, so without `queue:work` the HTTP request still returns 200 and the event sits unsent in the `jobs` table.
 
 **Backend tests:** `cd backend && php artisan test` (PHPUnit, in-memory SQLite locally; CI runs them against Postgres). They cover auth, tasks/filters and channel authorization. **There is still no frontend test runner.** Frontend checks are `npm run lint` (ESLint, including the layer-boundary rule below), `npm run typecheck` and `npm run build`; CI runs all three. `NotifyTaskCompleted` sleeps, so fake the bus in tests that move a task to `done`.
+
+**End-to-end:** `cd e2e && npm ci && npx playwright install --with-deps chromium && node run.mjs` (about 75 s, 56 checks) starts the real API, a queue worker, Reverb and the production frontend on fresh SQLite databases and drives them in a headless browser. Run it after touching auth, boards, realtime, the query cache or the CSP; CI (`e2e.yml`) does too. In a scenario, wait from Node (`waitFor`), not with `page.waitForFunction` (Next's hydration `replaceState` cuts that short), and give every negative check a positive control.
 
 ## Architecture
 
