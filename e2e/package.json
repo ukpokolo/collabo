@@ -1,0 +1,13 @@
+{
+  "name": "collabo-e2e",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end tests: the real API, queue worker, Reverb and frontend, driven by a headless browser.",
+  "scripts": {
+    "test": "node run.mjs",
+    "install-browser": "playwright install --with-deps chromium"
+  },
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}
