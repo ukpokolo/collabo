@@ -25,6 +25,31 @@ class OtpTest extends TestCase
         $this->assertNotNull($user->fresh()->email_verified_at);
     }
 
+    public function test_first_verification_creates_the_users_own_board(): void
+    {
+        $user = User::factory()->unverified()->create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
+        $code = OtpCode::issue('ada@example.com', OtpCode::PURPOSE_VERIFY_EMAIL);
+
+        $this->postJson('/api/auth/verify-email', ['email' => 'ada@example.com', 'code' => $code])->assertOk();
+
+        $board = $user->boards()->first();
+        $this->assertNotNull($board);
+        $this->assertSame("Ada Lovelace's board", $board->name);
+        $this->assertSame('owner', $board->pivot->role);
+    }
+
+    public function test_verifying_again_does_not_create_another_board(): void
+    {
+        $user = User::factory()->unverified()->create(['email' => 'ada@example.com']);
+
+        foreach ([1, 2] as $_) {
+            $code = OtpCode::issue('ada@example.com', OtpCode::PURPOSE_VERIFY_EMAIL);
+            $this->postJson('/api/auth/verify-email', ['email' => 'ada@example.com', 'code' => $code])->assertOk();
+        }
+
+        $this->assertSame(1, $user->boards()->count());
+    }
+
     public function test_code_is_single_use(): void
     {
         User::factory()->unverified()->create(['email' => 'ada@example.com']);

@@ -40,8 +40,9 @@ npm run build
 ```
 backend/app/Domain/
   Auth/   Http/(Controllers, Requests)  Models/OtpCode  Services/OtpService  Mail/OtpMail  routes.php
-  Tasks/  Http/Controllers  Models/Task  Events/TaskUpdated  Jobs/NotifyTaskCompleted  routes.php
-  Users/  Http/Controllers  Models/User  routes.php
+  Tasks/  Http/Controllers  Models/Task  Policies/TaskPolicy  Events/TaskUpdated  Jobs/NotifyTaskCompleted  routes.php
+  Boards/ Http/(Controllers)  Models/Board  Policies/BoardPolicy  Services/BoardService  routes.php
+  Users/  Models/User
 ```
 
 `routes/api.php` only sets the prefix and middleware; each domain owns its `routes.php`. Config, migrations, factories, seeders and views stay in Laravel's standard locations. `LatestOtpCommand` stays in `app/Console/Commands` because Laravel only auto-discovers commands there.
@@ -68,6 +69,17 @@ frontend/
 ```
 
 Rule, enforced by ESLint (`no-restricted-imports`): shared code (`components/ui`, `lib`, `hooks`) **must not import from `features/`**. Anything both `lib` and a feature need (e.g. the token store) lives in `lib`. Query keys, types and constants belong to the feature that owns them.
+
+### Boards and authorization
+
+Every task belongs to a board; a user sees only boards they are a member of. Roles live on the `board_user` pivot: `owner` (rename/delete the board, manage members), `member` (read and write tasks) and `viewer` (read only).
+
+- Routes: `/api/boards` (CRUD), `/api/boards/{board}/members`, `/api/boards/{board}/tasks` (list/create) and `/api/tasks/{task}` (show/update/delete — shallow nesting).
+- `BoardPolicy` returns **404 to non-members** (ids are sequential, so 403 would confirm they exist) and 403 to members whose role is too low. `TaskPolicy` delegates to it, so a task is exactly as accessible as its board.
+- `assigned_to` must be a member of the task's board. `board_id` is never accepted from a request body.
+- The `board.{boardId}` channel callback checks membership, so a user cannot subscribe to a board they are not on.
+- There is deliberately **no all-users endpoint**: the member list is per board. Verifying an email for the first time creates the user's own board.
+- Owner cannot be removed or demoted; ownership transfer is not built.
 
 ### Frontend routes and the current board
 
@@ -106,20 +118,20 @@ This is the rule to preserve:
 ### Realtime flow
 
 ```
-mutation → PUT /api/tasks/{id} → DB write → returns immediately
+mutation → PUT /api/tasks/{id} (policy: board role) → DB write → returns immediately
                                → TaskUpdated queued
-                                 → queue:work → Reverb → private-board.1 → other clients patch cache
+                                 → queue:work → Reverb → private-board.{boardId} → other clients on that board patch cache
 ```
 
 - `TaskUpdated` broadcasts on a **`PrivateChannel`**; `routes/channels.php` authorizes it.
 - One `Broadcast::channel('board.{boardId}')` registration serves both private and presence: Laravel strips the `private-`/`presence-` prefix *before* matching, so registering `presence-board.{id}` is dead code.
 - `->toOthers()` only works because `lib/http.ts` sends `X-Socket-Id` from `getSocketId()`.
 - On a `deleted` event the payload is **only `{ id }`** — the row is gone. `TaskUpdatedEvent` is a discriminated union; narrow on `type` before reading other fields.
-- In the hooks, use `echo.leaveChannel('private-board.1')`, **never** `echo.leave('board.1')` — the latter also tears down the presence channel the other hook owns.
+- In the hooks, use `echo.leaveChannel('private-board.{id}')`, **never** `echo.leave('board.{id}')` — the latter also tears down the presence channel the other hook owns.
 
 ### Search and filtering are server-side
 
-`GET /api/tasks` accepts `search`, `assigned_to` (comma-separated ids plus the literal `unassigned`), and `status`. `TaskController::index` escapes LIKE wildcards. The board never filters client-side; filters go into the query key and onto the URL, debounced 300 ms in `BoardView`.
+`GET /api/boards/{board}/tasks` accepts `search`, `assigned_to` (comma-separated ids plus the literal `unassigned`), and `status`. `TaskController::index` escapes LIKE wildcards. The board never filters client-side; filters go into the query key and onto the URL, debounced 300 ms in `BoardView`.
 
 ### Styling
 

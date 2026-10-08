@@ -43,6 +43,11 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting(): void
     {
+        // Adding members by email reveals whether an address is registered, so
+        // cap how fast one owner can probe.
+        RateLimiter::for('board-members', fn (Request $request) => Limit::perMinute(20)
+            ->by((string) $request->user()?->id));
+
         RateLimiter::for('auth-login', fn (Request $request) => Limit::perMinute(5)
             ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
 

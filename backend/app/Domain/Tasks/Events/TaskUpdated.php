@@ -18,15 +18,19 @@ class TaskUpdated implements ShouldBroadcast
 
     public string $type;
 
-    public function __construct(Task|array $task, string $type)
+    /** Which board's channel this goes to; not part of the payload. */
+    public int $boardId;
+
+    public function __construct(Task|array $task, string $type, int $boardId)
     {
         $this->task = $task;
         $this->type = $type;
+        $this->boardId = $boardId;
     }
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('board.1')];
+        return [new PrivateChannel('board.'.$this->boardId)];
     }
 
     public function broadcastAs(): string
