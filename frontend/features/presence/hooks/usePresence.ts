@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react';
 import { getEcho } from '@/lib/echo';
-import { CHANNELS } from '@/lib/channels';
+import { boardChannel } from '@/lib/channels';
+import { useBoardId } from '@/features/board/context';
 import { usePresenceStore } from '@/features/presence/store';
 import type { PresenceMember } from '@/features/presence/types';
 
 export function usePresence() {
+  const boardId = useBoardId();
   const { setMembers, addMember, removeMember, setStatus, reset } = usePresenceStore();
 
   useEffect(() => {
@@ -16,7 +18,7 @@ export function usePresence() {
     const echo = getEcho();
 
     echo
-      .join(CHANNELS.presence)
+      .join(boardChannel(boardId))
       .here((members: PresenceMember[]) => {
         if (cancelled) return;
         setMembers(members);
@@ -29,8 +31,8 @@ export function usePresence() {
     return () => {
       cancelled = true;
       // leaveChannel, not leave: leave() would also drop private-board.N.
-      echo.leaveChannel(`presence-${CHANNELS.presence}`);
+      echo.leaveChannel(`presence-${boardChannel(boardId)}`);
       reset();
     };
-  }, [setMembers, addMember, removeMember, setStatus, reset]);
+  }, [boardId, setMembers, addMember, removeMember, setStatus, reset]);
 }

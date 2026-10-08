@@ -81,6 +81,15 @@ Every task belongs to a board; a user sees only boards they are a member of. Rol
 - There is deliberately **no all-users endpoint**: the member list is per board. Verifying an email for the first time creates the user's own board.
 - Owner cannot be removed or demoted; ownership transfer is not built.
 
+### Frontend routes and the current board
+
+- `/` → redirects to the last-used board (`features/board/lastBoard.ts`), else the first, else offers to create one.
+- `/boards/[boardId]` (kanban) and `/boards/[boardId]/members` (roster, invites, rename/delete). `/tasks/[id]` loads the task first and takes its board from `task.board_id`.
+- `<BoardProvider boardId>` (`features/board/context.tsx`) tells everything below which board it is on. `useTasks`, `useCreateTask`, `useTaskBroadcast`, `usePresence` and `useBoardMembers` read it with `useBoardId()` and **throw outside a provider** — wrap new board-level pages in one.
+- **Optimistic updates and realtime patches sweep `taskKeys.board(boardId)`, never `taskKeys.all`.** Sweeping all lists would put a task created on one board into every other board's cached lists.
+- There is no all-users list. The assignee roster is `useBoardMembers()`.
+- Viewers get a read-only UI (no composer, drag, delete or editing). That is a courtesy; the API is what enforces it.
+
 ### Auth is Bearer tokens, not cookies
 
 Frontend and API are deployed to separate origins, so Sanctum is used in **personal access token** mode. Consequences that are easy to break:

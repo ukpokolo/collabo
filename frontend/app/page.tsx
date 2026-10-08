@@ -1,14 +1,14 @@
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { AppShell } from '@/components/layout/AppShell';
-import { BoardView } from '@/features/board/components/BoardView';
+import { BoardsHome } from '@/features/board/components/BoardsHome';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
-export default function BoardPage() {
+export default function HomePage() {
   return (
     <AuthGuard>
       <AppShell>
-        <ErrorBoundary title="The board failed to render">
-          <BoardView />
+        <ErrorBoundary title="Couldn't open your boards">
+          <BoardsHome />
         </ErrorBoundary>
       </AppShell>
     </AuthGuard>

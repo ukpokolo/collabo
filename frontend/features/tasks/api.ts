@@ -14,17 +14,17 @@ export function buildTaskQuery(filters: TaskFilters): string {
 }
 
 /**
- * Task endpoints. One function per route on the Laravel apiResource — this is
- * the only module that knows about URLs, so components and hooks never build
- * one themselves.
+ * Task endpoints. List and create hang off a board; show, update and delete
+ * address the task directly. This is the only module that knows about URLs.
  */
 export const tasksApi = {
-  list: (filters: TaskFilters = {}, signal?: AbortSignal) =>
-    http<Task[]>(`/api/tasks${buildTaskQuery(filters)}`, { signal }),
+  list: (boardId: number, filters: TaskFilters = {}, signal?: AbortSignal) =>
+    http<Task[]>(`/api/boards/${boardId}/tasks${buildTaskQuery(filters)}`, { signal }),
 
   get: (id: number, signal?: AbortSignal) => http<Task>(`/api/tasks/${id}`, { signal }),
 
-  create: (input: CreateTaskInput) => http<Task>('/api/tasks', { method: 'POST', body: input }),
+  create: (boardId: number, input: CreateTaskInput) =>
+    http<Task>(`/api/boards/${boardId}/tasks`, { method: 'POST', body: input }),
 
   update: (id: number, input: UpdateTaskInput) =>
     http<Task>(`/api/tasks/${id}`, { method: 'PUT', body: input }),

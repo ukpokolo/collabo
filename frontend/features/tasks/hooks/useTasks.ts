@@ -9,11 +9,12 @@ import type {
   TaskStatus,
   UpdateTaskInput,
 } from '@/features/tasks/types';
-import type { User } from '@/features/users/types';
+import type { BoardMember } from '@/features/board/types';
 import { taskKeys } from '@/features/tasks/keys';
-import { userKeys } from '@/features/users/keys';
+import { boardKeys } from '@/features/board/keys';
+import { useBoardId } from '@/features/board/context';
 
-function applyPatch(task: Task, input: UpdateTaskInput, users: User[] | undefined): Task {
+function applyPatch(task: Task, input: UpdateTaskInput, users: BoardMember[] | undefined): Task {
   const next: Task = { ...task, ...input };
 
   // `assigned_to` is an id but the UI renders `assignee`, so resolve the
@@ -29,35 +30,39 @@ function applyPatch(task: Task, input: UpdateTaskInput, users: User[] | undefine
 }
 
 export function useTasks(filters: TaskFilters = {}) {
+  const boardId = useBoardId();
+
   return useQuery({
-    queryKey: taskKeys.filtered(filters),
-    queryFn: ({ signal }) => tasksApi.list(filters, signal),
+    queryKey: taskKeys.filtered(boardId, filters),
+    queryFn: ({ signal }) => tasksApi.list(boardId, filters, signal),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (previous) => previous,
   });
 }
 
-function patchLists(client: QueryClient, update: (tasks: Task[]) => Task[]) {
+function patchLists(client: QueryClient, boardId: number, update: (tasks: Task[]) => Task[]) {
   // setQueriesData matches on key prefix, so guard against anything that
   // isn't a list being handed to a list updater.
-  client.setQueriesData<Task[]>({ queryKey: taskKeys.all }, (current) =>
+  client.setQueriesData<Task[]>({ queryKey: taskKeys.board(boardId) }, (current) =>
     Array.isArray(current) ? update(current) : current,
   );
 }
 
 export function useCreateTask() {
   const client = useQueryClient();
+  const boardId = useBoardId();
 
   return useMutation({
-    mutationFn: (input: CreateTaskInput) => tasksApi.create(input),
+    mutationFn: (input: CreateTaskInput) => tasksApi.create(boardId, input),
 
     onMutate: async (input) => {
-      await client.cancelQueries({ queryKey: taskKeys.all });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
+      await client.cancelQueries({ queryKey: taskKeys.board(boardId) });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.board(boardId) });
 
       const optimistic: Task = {
         id: -Date.now(),
+        board_id: boardId,
         title: input.title,
         description: input.description ?? null,
         status: input.status ?? 'todo',
@@ -67,12 +72,12 @@ export function useCreateTask() {
         assignee: null,
       };
 
-      patchLists(client, (tasks) => [optimistic, ...tasks]);
+      patchLists(client, boardId, (tasks) => [optimistic, ...tasks]);
       return { snapshot, optimisticId: optimistic.id };
     },
 
     onSuccess: (created, _input, context) => {
-      patchLists(client, (tasks) =>
+      patchLists(client, boardId, (tasks) =>
         tasks.map((task) => (task.id === context?.optimisticId ? created : task)),
       );
     },
@@ -85,18 +90,19 @@ export function useCreateTask() {
 
 export function useUpdateTask() {
   const client = useQueryClient();
+  const boardId = useBoardId();
 
   return useMutation({
     mutationFn: ({ id, input }: { id: number; input: UpdateTaskInput }) =>
       tasksApi.update(id, input),
 
     onMutate: async ({ id, input }) => {
-      await client.cancelQueries({ queryKey: taskKeys.all });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
+      await client.cancelQueries({ queryKey: taskKeys.board(boardId) });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.board(boardId) });
       const previousDetail = client.getQueryData<Task>(taskKeys.detail(id));
-      const users = client.getQueryData<User[]>(userKeys.all);
+      const users = client.getQueryData<BoardMember[]>(boardKeys.members(boardId));
 
-      patchLists(client, (tasks) =>
+      patchLists(client, boardId, (tasks) =>
         tasks.map((task) => (task.id === id ? applyPatch(task, input, users) : task)),
       );
 
@@ -109,7 +115,7 @@ export function useUpdateTask() {
 
     onSuccess: (updated) => {
       client.setQueryData<Task>(taskKeys.detail(updated.id), updated);
-      patchLists(client, (tasks) =>
+      patchLists(client, boardId, (tasks) =>
         tasks.map((task) => (task.id === updated.id ? updated : task)),
       );
     },
@@ -123,15 +129,16 @@ export function useUpdateTask() {
 
 export function useDeleteTask() {
   const client = useQueryClient();
+  const boardId = useBoardId();
 
   return useMutation({
     mutationFn: (id: number) => tasksApi.remove(id),
 
     onMutate: async (id) => {
-      await client.cancelQueries({ queryKey: taskKeys.all });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
+      await client.cancelQueries({ queryKey: taskKeys.board(boardId) });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.board(boardId) });
 
-      patchLists(client, (tasks) => tasks.filter((task) => task.id !== id));
+      patchLists(client, boardId, (tasks) => tasks.filter((task) => task.id !== id));
       return { snapshot };
     },
 

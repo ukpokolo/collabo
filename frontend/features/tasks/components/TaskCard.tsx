@@ -17,6 +17,7 @@ interface TaskCardProps {
   onDelete?: (id: number) => void;
   onOpen?: (id: number) => void;
   onAssigneeChange?: (id: number, assigned_to: number | null) => void;
+  readOnly?: boolean;
 }
 
 export function TaskCardView({
@@ -103,11 +104,18 @@ export function TaskCardView({
   );
 }
 
-export function TaskCard({ task, users, onDelete, onOpen, onAssigneeChange }: TaskCardProps) {
+export function TaskCard({
+  task,
+  users,
+  onDelete,
+  onOpen,
+  onAssigneeChange,
+  readOnly = false,
+}: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { task },
-    disabled: task.id < 0,
+    disabled: task.id < 0 || readOnly,
   });
 
   // A pointerup after a drag still fires onClick, which would open the detail
@@ -138,8 +146,8 @@ export function TaskCard({ task, users, onDelete, onOpen, onAssigneeChange }: Ta
       <TaskCardView
         task={task}
         users={users}
-        onDelete={onDelete}
-        onAssigneeChange={onAssigneeChange}
+        onDelete={readOnly ? undefined : onDelete}
+        onAssigneeChange={readOnly ? undefined : onAssigneeChange}
         dragging={isDragging}
       />
     </div>

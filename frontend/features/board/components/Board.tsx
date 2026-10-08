@@ -22,7 +22,7 @@ import { useBoardStore } from '@/features/board/store';
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
-import { useUsers } from '@/features/tasks/hooks/useTask';
+import { useBoardMembers, useCurrentBoard } from '@/features/board/hooks/useBoards';
 import {
   TASK_STATUSES,
   type Task,
@@ -37,7 +37,11 @@ function isTaskStatus(value: unknown): value is TaskStatus {
 export function Board({ filters = {} }: { filters?: TaskFilters }) {
   const router = useRouter();
   const { data: tasks, isLoading, isError, error, refetch, isFetching } = useTasks(filters);
-  const { data: users } = useUsers();
+  const { data: users } = useBoardMembers();
+  const { data: board } = useCurrentBoard();
+  // Viewers can read but not change anything. The API enforces this too; this
+  // just stops the UI offering actions that would be refused.
+  const readOnly = board?.role === 'viewer';
   const { mutate: createTask } = useCreateTask();
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
@@ -73,7 +77,7 @@ export function Board({ filters = {} }: { filters?: TaskFilters }) {
     if (!isTaskStatus(target)) return;
 
     const task = active.data.current?.task as Task | undefined;
-    if (!task || task.status === target) return;
+    if (readOnly || !task || task.status === target) return;
 
     updateTask({ id: task.id, input: { status: target } });
   };
@@ -117,6 +121,7 @@ export function Board({ filters = {} }: { filters?: TaskFilters }) {
             column={column}
             tasks={byStatus.get(column.key) ?? []}
             users={users}
+            readOnly={readOnly}
             onCreate={(title, status) => createTask({ title, status })}
             onDelete={(id) => deleteTask(id)}
             onOpen={(id) => router.push(`/tasks/${id}`)}
