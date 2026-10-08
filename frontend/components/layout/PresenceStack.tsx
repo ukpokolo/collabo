@@ -2,7 +2,7 @@
 
 import { AvatarStack } from '@/components/ui/Avatar';
 import { usePresenceStore } from '@/store/usePresenceStore';
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/features/auth/hooks/useSession';
 
 export function PresenceStack() {
   const { members, status } = usePresenceStore();

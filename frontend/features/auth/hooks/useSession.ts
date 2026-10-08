@@ -3,9 +3,9 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authApi, type AuthSuccess } from '@/lib/api/auth';
+import { authApi, type AuthSuccess } from '@/features/auth/api';
 import { QUERY_KEYS } from '@/lib/constants';
-import { clearToken, hasToken, setToken } from '@/lib/auth/token';
+import { clearToken, hasToken, setToken } from '@/features/auth/token';
 import { disconnectEcho } from '@/lib/echo';
 
 export function useSession() {

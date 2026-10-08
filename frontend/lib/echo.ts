@@ -1,6 +1,6 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
-import { getToken } from '@/lib/auth/token';
+import { getToken } from '@/features/auth/token';
 
 type EchoClient = Echo<'reverb'>;
 

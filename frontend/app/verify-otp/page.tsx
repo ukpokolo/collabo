@@ -8,9 +8,9 @@ import { OtpInput } from '@/components/auth/OtpInput';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { TextButton, TextLink } from '@/components/ui/TextLink';
-import { authApi } from '@/lib/api/auth';
+import { authApi } from '@/features/auth/api';
 import { ApiError } from '@/lib/api/http';
-import { useAuthSuccess } from '@/hooks/useSession';
+import { useAuthSuccess } from '@/features/auth/hooks/useSession';
 
 function VerifyOtpForm() {
   const params = useSearchParams();

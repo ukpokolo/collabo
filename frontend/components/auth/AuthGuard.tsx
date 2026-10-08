@@ -3,8 +3,8 @@
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { useSession } from '@/hooks/useSession';
-import { hasToken } from '@/lib/auth/token';
+import { useSession } from '@/features/auth/hooks/useSession';
+import { hasToken } from '@/features/auth/token';
 
 /**
  * Convenience gate, not the security boundary — every protected endpoint sits

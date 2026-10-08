@@ -9,7 +9,7 @@ import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { TextLink } from '@/components/ui/TextLink';
-import { authApi } from '@/lib/api/auth';
+import { authApi } from '@/features/auth/api';
 import { ApiError } from '@/lib/api/http';
 
 function ResetPasswordForm() {

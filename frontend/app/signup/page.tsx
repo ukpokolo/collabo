@@ -8,7 +8,7 @@ import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { authApi } from '@/lib/api/auth';
+import { authApi } from '@/features/auth/api';
 import { ApiError } from '@/lib/api/http';
 
 export default function SignupPage() {
