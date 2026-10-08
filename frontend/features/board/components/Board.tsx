@@ -13,12 +13,12 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { BoardColumn } from '@/components/board/BoardColumn';
+import { BoardColumn } from '@/features/board/components/BoardColumn';
 import { TaskCardView } from '@/features/tasks/components/TaskCard';
 import { Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { COLUMNS } from '@/lib/constants';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore } from '@/features/board/store';
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';

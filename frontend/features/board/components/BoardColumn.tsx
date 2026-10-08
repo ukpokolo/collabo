@@ -6,7 +6,7 @@ import { TaskCard } from '@/features/tasks/components/TaskCard';
 import { AddTaskComposer } from '@/features/tasks/components/AddTaskComposer';
 import { Badge } from '@/components/ui/Surface';
 import { IconButton } from '@/components/ui/IconButton';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
 import type { ColumnConfig } from '@/lib/constants';
 import type { Task, TaskStatus, User } from '@/lib/types';

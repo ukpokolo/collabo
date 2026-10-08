@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { IconButton } from '@/components/ui/IconButton';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
 
 const NAV = [

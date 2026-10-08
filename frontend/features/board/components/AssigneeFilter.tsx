@@ -3,7 +3,7 @@
 import { UserCircle2, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { useUsers } from '@/features/tasks/hooks/useTask';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
 
 export function AssigneeFilter() {

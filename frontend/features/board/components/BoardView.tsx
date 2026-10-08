@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 import { TopBar } from '@/components/layout/TopBar';
-import { Board } from '@/components/board/Board';
+import { Board } from '@/features/board/components/Board';
 import { useDebounced } from '@/hooks/useDebounced';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore } from '@/features/board/store';
 import type { TaskFilters } from '@/lib/types';
 
 /**
