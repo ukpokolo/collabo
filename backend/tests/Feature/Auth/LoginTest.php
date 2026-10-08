@@ -3,8 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Domain\Auth\Mail\OtpMail;
-use App\Models\User;
+use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -85,6 +86,24 @@ class LoginTest extends TestCase
         $this->withToken($token)->postJson('/api/auth/logout')->assertOk();
 
         $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
+    public function test_tokens_issued_before_the_domain_move_still_authenticate(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('legacy')->plainTextToken;
+
+        // Rows written before User moved to Domain/Users carry the old class name.
+        DB::table('personal_access_tokens')->update(['tokenable_type' => 'App\\Models\\User']);
+
+        $this->withToken($token)->getJson('/api/auth/user')->assertOk()->assertJsonPath('id', $user->id);
+    }
+
+    public function test_new_tokens_are_stored_with_the_pinned_legacy_type(): void
+    {
+        User::factory()->create()->createToken('t');
+
+        $this->assertDatabaseHas('personal_access_tokens', ['tokenable_type' => 'App\\Models\\User']);
     }
 
     public function test_protected_routes_reject_missing_token(): void

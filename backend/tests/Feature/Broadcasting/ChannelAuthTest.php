@@ -4,7 +4,7 @@ namespace Tests\Feature\Broadcasting;
 
 use App\Domain\Tasks\Events\TaskUpdated;
 use App\Domain\Tasks\Models\Task;
-use App\Models\User;
+use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

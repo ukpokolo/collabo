@@ -4,7 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Domain\Auth\Mail\OtpMail;
 use App\Domain\Auth\Models\OtpCode;
-use App\Models\User;
+use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
