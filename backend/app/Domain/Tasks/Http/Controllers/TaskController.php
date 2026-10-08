@@ -117,7 +117,7 @@ class TaskController extends Controller
         $task->load('assignee');
 
         if ($task->status === Task::STATUS_DONE && ! $wasDone && Feature::for($request->user())->active('notify-on-complete')) {
-            NotifyTaskCompleted::dispatch($task);
+            NotifyTaskCompleted::dispatch($task, $request->user()->id);
         }
 
         broadcast(new TaskUpdated($task, 'updated', $task->board_id))->toOthers();
