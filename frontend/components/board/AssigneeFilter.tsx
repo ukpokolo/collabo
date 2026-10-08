@@ -2,7 +2,7 @@
 
 import { UserCircle2, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
-import { useUsers } from '@/hooks/useTask';
+import { useUsers } from '@/features/tasks/hooks/useTask';
 import { useBoardStore } from '@/store/useBoardStore';
 import { cn } from '@/lib/utils';
 

@@ -19,10 +19,10 @@ import { Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { COLUMNS } from '@/lib/constants';
 import { useBoardStore } from '@/store/useBoardStore';
-import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/hooks/useTasks';
-import { useTaskBroadcast } from '@/hooks/useTaskBroadcast';
+import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from '@/features/tasks/hooks/useTasks';
+import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
-import { useUsers } from '@/hooks/useTask';
+import { useUsers } from '@/features/tasks/hooks/useTask';
 import { TASK_STATUSES, type Task, type TaskFilters, type TaskStatus } from '@/lib/types';
 
 function isTaskStatus(value: unknown): value is TaskStatus {

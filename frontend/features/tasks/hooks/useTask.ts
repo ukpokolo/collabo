@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { tasksApi } from '@/lib/api/tasks';
+import { tasksApi } from '@/features/tasks/api';
 import { usersApi } from '@/features/users/api';
 import { QUERY_KEYS } from '@/lib/constants';
 

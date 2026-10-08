@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { tasksApi } from '@/lib/api/tasks';
+import { tasksApi } from '@/features/tasks/api';
 import { QUERY_KEYS } from '@/lib/constants';
 import type {
   CreateTaskInput,
