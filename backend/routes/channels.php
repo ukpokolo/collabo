@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Users\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
 // Laravel strips the "private-" / "presence-" prefix before matching, so this

@@ -5,7 +5,7 @@ use App\Domain\Auth\Http\Controllers\OtpController;
 use App\Domain\Auth\Http\Controllers\PasswordResetController;
 use App\Domain\Auth\Http\Controllers\RegisterController;
 use App\Domain\Tasks\Http\Controllers\TaskController;
-use App\Http\Controllers\UserController;
+use App\Domain\Users\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {

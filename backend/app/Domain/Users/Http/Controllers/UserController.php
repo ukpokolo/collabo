@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domain\Users\Http\Controllers;
 
-use App\Models\User;
+use App\Domain\Users\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller

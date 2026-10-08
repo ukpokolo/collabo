@@ -4,7 +4,7 @@ namespace App\Domain\Auth\Services;
 
 use App\Domain\Auth\Mail\OtpMail;
 use App\Domain\Auth\Models\OtpCode;
-use App\Models\User;
+use App\Domain\Users\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 class OtpService
