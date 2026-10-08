@@ -175,9 +175,14 @@ These are real defects that were diagnosed here; don't "fix" them back.
 - **`frontend/.npmrc` sets empty proxy values** so npm works off the corporate VPN. Restore the proxy lines when on it.
 - **`MAIL_MAILER=log` means no email is delivered** — use `php artisan otp:latest`. Switch to Mailtrap sandbox (`sandbox.smtp.mailtrap.io`) for demos where someone else enters their address.
 
-## Deployment notes
+## Deployment
 
-Vercel cannot run Laravel, Reverb, or the queue worker. The intended split is Next.js on Vercel; API, Reverb, and `queue:work` as separate Render services.
+Full guide: `docs/deployment.md` (first deploy, env vars, email, day-to-day commands, rollback, troubleshooting). Free plans only: **Vercel** (frontend), **Render** (API and Reverb, `render.yaml`) and **Neon** (Postgres). Not Render's own free Postgres: it is deleted 30 days after creation.
 
-**SQLite will not work there** — Render's disk is ephemeral and the separate services cannot share a file. Postgres is required; it's a `.env` change since Eloquent abstracts the driver.
-
+- **One image, two roles** (`backend/Dockerfile`, FrankenPHP, non-root): `start-api.sh` migrates under a lock, warms caches and runs a supervised **queue worker beside the web server** (Render has no free worker service); `start-reverb.sh` runs the WebSocket server. `docker.yml` builds it in CI and checks the extensions, a Postgres-backed boot and the Reverb role.
+- **`TRUSTED_PROXIES=*` on Render**, otherwise every user shares the load balancer's IP and one rate-limit bucket. Because a trusted `X-Forwarded-For` can be forged, login, code requests and code guesses also have an address-only limit; keep it when you touch the limiters (`AppServiceProvider`).
+- **`NEXT_PUBLIC_*` values are baked in at build time**, and the CSP's `connect-src` is built from `NEXT_PUBLIC_REVERB_*`. Changing one means rebuilding the frontend.
+- **Reverb enforces `REVERB_ALLOWED_ORIGINS` after the WebSocket upgrade**, as a `pusher:error` 4009 frame, not an HTTP refusal. It must be the frontend's *host* (no scheme, never `*`).
+- **No shell on Render's free plan.** Admin commands (`features:set`, `queue:failed`) run on a developer machine with `DB_URL` pointing at Neon.
+- **After a deploy or an env change, run `node scripts/smoke.mjs`** (usage in its header). It has been checked to fail on the mistakes that matter: Reverb allowing every origin, a mismatched Reverb key, a frontend built against the wrong API.
+- Free Render services sleep after 15 idle minutes and take about a minute to wake; the board's "Live updates are paused" banner covers Reverb's wake-up.
