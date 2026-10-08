@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
+use Laravel\Pennant\Feature;
 
 class TaskController extends Controller
 {
@@ -103,7 +104,7 @@ class TaskController extends Controller
         $task->update($validated);
         $task->load('assignee');
 
-        if ($task->status === Task::STATUS_DONE && ! $wasDone) {
+        if ($task->status === Task::STATUS_DONE && ! $wasDone && Feature::for($request->user())->active('notify-on-complete')) {
             NotifyTaskCompleted::dispatch($task);
         }
 
