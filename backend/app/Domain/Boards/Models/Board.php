@@ -2,15 +2,18 @@
 
 namespace App\Domain\Boards\Models;
 
+use App\Domain\Boards\Policies\BoardPolicy;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Users\Models\User;
 use Database\Factories\BoardFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[UsePolicy(BoardPolicy::class)]
 class Board extends Model
 {
     use HasFactory;
