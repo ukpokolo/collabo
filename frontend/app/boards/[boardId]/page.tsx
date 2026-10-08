@@ -5,8 +5,10 @@ import { BoardProvider } from '@/features/board/context';
 import { BoardView } from '@/features/board/components/BoardView';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
-export default function BoardPage({ params }: { params: { boardId: string } }) {
-  const boardId = Number(params.boardId);
+// Next 15: route params arrive as a Promise.
+export default async function BoardPage({ params }: { params: Promise<{ boardId: string }> }) {
+  const { boardId: raw } = await params;
+  const boardId = Number(raw);
 
   if (!Number.isInteger(boardId) || boardId <= 0) notFound();
 
