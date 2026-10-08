@@ -8,7 +8,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { AssigneePicker } from '@/features/users/components/AssigneePicker';
 import { IconButton } from '@/components/ui/IconButton';
 import { cn, relativeTime } from '@/lib/utils';
-import type { Task, User } from '@/lib/types';
+import type { Task } from '@/features/tasks/types';
+import type { User } from '@/features/users/types';
 
 interface TaskCardProps {
   task: Task;

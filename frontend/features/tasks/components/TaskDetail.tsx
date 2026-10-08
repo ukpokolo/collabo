@@ -16,7 +16,7 @@ import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
 import { ApiError } from '@/lib/api/http';
 import { relativeTime } from '@/lib/utils';
-import type { TaskStatus, UpdateTaskInput } from '@/lib/types';
+import type { TaskStatus, UpdateTaskInput } from '@/features/tasks/types';
 
 function DetailHeader({ children }: { children?: React.ReactNode }) {
   return (

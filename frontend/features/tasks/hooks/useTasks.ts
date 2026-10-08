@@ -2,15 +2,16 @@
 
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { tasksApi } from '@/features/tasks/api';
-import { QUERY_KEYS } from '@/lib/constants';
 import type {
   CreateTaskInput,
   Task,
   TaskFilters,
   TaskStatus,
   UpdateTaskInput,
-  User,
-} from '@/lib/types';
+} from '@/features/tasks/types';
+import type { User } from '@/features/users/types';
+import { taskKeys } from '@/features/tasks/keys';
+import { userKeys } from '@/features/users/keys';
 
 function applyPatch(task: Task, input: UpdateTaskInput, users: User[] | undefined): Task {
   const next: Task = { ...task, ...input };
@@ -29,7 +30,7 @@ function applyPatch(task: Task, input: UpdateTaskInput, users: User[] | undefine
 
 export function useTasks(filters: TaskFilters = {}) {
   return useQuery({
-    queryKey: QUERY_KEYS.tasksFiltered(filters),
+    queryKey: taskKeys.filtered(filters),
     queryFn: ({ signal }) => tasksApi.list(filters, signal),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
@@ -40,7 +41,7 @@ export function useTasks(filters: TaskFilters = {}) {
 function patchLists(client: QueryClient, update: (tasks: Task[]) => Task[]) {
   // setQueriesData matches on key prefix, so guard against anything that
   // isn't a list being handed to a list updater.
-  client.setQueriesData<Task[]>({ queryKey: QUERY_KEYS.tasks }, (current) =>
+  client.setQueriesData<Task[]>({ queryKey: taskKeys.all }, (current) =>
     Array.isArray(current) ? update(current) : current,
   );
 }
@@ -52,8 +53,8 @@ export function useCreateTask() {
     mutationFn: (input: CreateTaskInput) => tasksApi.create(input),
 
     onMutate: async (input) => {
-      await client.cancelQueries({ queryKey: QUERY_KEYS.tasks });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: QUERY_KEYS.tasks });
+      await client.cancelQueries({ queryKey: taskKeys.all });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
 
       const optimistic: Task = {
         id: -Date.now(),
@@ -90,24 +91,24 @@ export function useUpdateTask() {
       tasksApi.update(id, input),
 
     onMutate: async ({ id, input }) => {
-      await client.cancelQueries({ queryKey: QUERY_KEYS.tasks });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: QUERY_KEYS.tasks });
-      const previousDetail = client.getQueryData<Task>(QUERY_KEYS.task(id));
-      const users = client.getQueryData<User[]>(QUERY_KEYS.users);
+      await client.cancelQueries({ queryKey: taskKeys.all });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
+      const previousDetail = client.getQueryData<Task>(taskKeys.detail(id));
+      const users = client.getQueryData<User[]>(userKeys.all);
 
       patchLists(client, (tasks) =>
         tasks.map((task) => (task.id === id ? applyPatch(task, input, users) : task)),
       );
 
       if (previousDetail) {
-        client.setQueryData<Task>(QUERY_KEYS.task(id), applyPatch(previousDetail, input, users));
+        client.setQueryData<Task>(taskKeys.detail(id), applyPatch(previousDetail, input, users));
       }
 
       return { snapshot, previousDetail };
     },
 
     onSuccess: (updated) => {
-      client.setQueryData<Task>(QUERY_KEYS.task(updated.id), updated);
+      client.setQueryData<Task>(taskKeys.detail(updated.id), updated);
       patchLists(client, (tasks) =>
         tasks.map((task) => (task.id === updated.id ? updated : task)),
       );
@@ -115,7 +116,7 @@ export function useUpdateTask() {
 
     onError: (_error, { id }, context) => {
       context?.snapshot.forEach(([key, data]) => client.setQueryData(key, data));
-      if (context?.previousDetail) client.setQueryData(QUERY_KEYS.task(id), context.previousDetail);
+      if (context?.previousDetail) client.setQueryData(taskKeys.detail(id), context.previousDetail);
     },
   });
 }
@@ -127,8 +128,8 @@ export function useDeleteTask() {
     mutationFn: (id: number) => tasksApi.remove(id),
 
     onMutate: async (id) => {
-      await client.cancelQueries({ queryKey: QUERY_KEYS.tasks });
-      const snapshot = client.getQueriesData<Task[]>({ queryKey: QUERY_KEYS.tasks });
+      await client.cancelQueries({ queryKey: taskKeys.all });
+      const snapshot = client.getQueriesData<Task[]>({ queryKey: taskKeys.all });
 
       patchLists(client, (tasks) => tasks.filter((task) => task.id !== id));
       return { snapshot };

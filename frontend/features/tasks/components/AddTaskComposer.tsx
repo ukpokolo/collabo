@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useBoardStore } from '@/features/board/store';
-import type { TaskStatus } from '@/lib/types';
+import type { TaskStatus } from '@/features/tasks/types';
 
 interface AddTaskComposerProps {
   status: TaskStatus;

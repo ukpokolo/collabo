@@ -3,12 +3,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { tasksApi } from '@/features/tasks/api';
 import { usersApi } from '@/features/users/api';
-import { QUERY_KEYS } from '@/lib/constants';
+import { taskKeys } from '@/features/tasks/keys';
+import { userKeys } from '@/features/users/keys';
 
 /** A single task, for the detail page. */
 export function useTask(id: number) {
   return useQuery({
-    queryKey: QUERY_KEYS.task(id),
+    queryKey: taskKeys.detail(id),
     queryFn: ({ signal }) => tasksApi.get(id, signal),
     enabled: Number.isFinite(id) && id > 0,
     staleTime: 30_000,
@@ -21,7 +22,7 @@ export function useTask(id: number) {
  */
 export function useUsers() {
   return useQuery({
-    queryKey: QUERY_KEYS.users,
+    queryKey: userKeys.all,
     queryFn: ({ signal }) => usersApi.list(signal),
     staleTime: 5 * 60_000,
   });

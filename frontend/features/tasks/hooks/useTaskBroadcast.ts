@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getEcho } from '@/lib/echo';
-import { CHANNELS, QUERY_KEYS } from '@/lib/constants';
-import type { Task, TaskUpdatedEvent } from '@/lib/types';
+import { CHANNELS } from '@/lib/channels';
+import type { Task, TaskUpdatedEvent } from '@/features/tasks/types';
+import { taskKeys } from '@/features/tasks/keys';
 
 export function useTaskBroadcast() {
   const client = useQueryClient();
@@ -16,12 +17,12 @@ export function useTaskBroadcast() {
     // The leading dot is required, otherwise Echo prefixes the app namespace.
     channel.listen('.task.updated', (event: TaskUpdatedEvent) => {
       if (event.type === 'deleted') {
-        client.removeQueries({ queryKey: QUERY_KEYS.task(event.task.id) });
+        client.removeQueries({ queryKey: taskKeys.detail(event.task.id) });
       } else {
-        client.setQueryData<Task>(QUERY_KEYS.task(event.task.id), event.task);
+        client.setQueryData<Task>(taskKeys.detail(event.task.id), event.task);
       }
 
-      client.setQueriesData<Task[]>({ queryKey: QUERY_KEYS.tasks }, (current) => {
+      client.setQueriesData<Task[]>({ queryKey: taskKeys.all }, (current) => {
         if (!Array.isArray(current)) return current;
 
         switch (event.type) {

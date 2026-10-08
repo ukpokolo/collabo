@@ -1,8 +1,8 @@
 'use client';
 
-import { COLUMNS } from '@/lib/constants';
+import { COLUMNS } from '@/features/board/constants';
 import { cn } from '@/lib/utils';
-import type { TaskStatus } from '@/lib/types';
+import type { TaskStatus } from '@/features/tasks/types';
 
 interface StatusSelectProps {
   value: TaskStatus;

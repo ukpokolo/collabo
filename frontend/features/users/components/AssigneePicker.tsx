@@ -6,7 +6,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useDismissable } from '@/hooks/useDismissable';
 import { useDebounced } from '@/hooks/useDebounced';
 import { cn } from '@/lib/utils';
-import type { User } from '@/lib/types';
+import type { User } from '@/features/users/types';
 
 interface AssigneePickerProps {
   users: User[];
