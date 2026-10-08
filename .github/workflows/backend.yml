@@ -72,3 +72,6 @@ jobs:
 
       - name: Routes load
         run: php artisan route:list > /dev/null
+
+      - name: Tests
+        run: php artisan test
