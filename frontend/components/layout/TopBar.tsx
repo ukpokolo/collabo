@@ -1,9 +1,10 @@
 'use client';
 
-import { CalendarDays, ChevronRight, LayoutGrid, List, Loader2, Menu, Search } from 'lucide-react';
+import { CalendarDays, LayoutGrid, List, Loader2, Menu, Search } from 'lucide-react';
 import { PresenceStack } from '@/features/presence/components/PresenceStack';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { AssigneeFilter } from '@/features/board/components/AssigneeFilter';
+import { BoardSwitcher } from '@/features/board/components/BoardSwitcher';
 import { IconButton } from '@/components/ui/IconButton';
 import { useBoardStore } from '@/features/board/store';
 import { cn } from '@/lib/utils';
@@ -29,11 +30,7 @@ export function TopBar({ searching = false }: { searching?: boolean }) {
             <Menu />
           </IconButton>
 
-          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
-            <span className="hidden text-foreground-muted sm:inline">Product Board</span>
-            <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-foreground-subtle sm:inline" />
-            <h1 className="truncate font-semibold text-foreground">Sprint 12</h1>
-          </nav>
+          <BoardSwitcher />
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">

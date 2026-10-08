@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { SectionLabel, Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { useTask } from '@/features/tasks/hooks/useTask';
-import { useBoardMembers } from '@/features/board/hooks/useBoards';
+import { useBoardMembers, useCurrentBoard } from '@/features/board/hooks/useBoards';
 import { BoardProvider } from '@/features/board/context';
 import { useDeleteTask, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
@@ -119,6 +119,8 @@ function TaskDetailBody({ task }: { task: Task }) {
   const router = useRouter();
   const taskId = task.id;
   const { data: users } = useBoardMembers();
+  const { data: board } = useCurrentBoard();
+  const readOnly = board?.role === 'viewer';
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
 
@@ -157,17 +159,19 @@ function TaskDetailBody({ task }: { task: Task }) {
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <PresenceStack />
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => {
-              deleteTask(task.id);
-              router.push(`/boards/${task.board_id}`);
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Delete</span>
-          </Button>
+          {!readOnly && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                deleteTask(task.id);
+                router.push(`/boards/${task.board_id}`);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          )}
         </div>
       </DetailHeader>
 
@@ -176,6 +180,7 @@ function TaskDetailBody({ task }: { task: Task }) {
           <div className="min-w-0 space-y-6">
             <input
               value={title}
+              readOnly={readOnly}
               onChange={(event) => setTitle(event.target.value)}
               onBlur={() => title.trim() && title !== task.title && commit({ title: title.trim() })}
               aria-label="Task title"
@@ -186,6 +191,7 @@ function TaskDetailBody({ task }: { task: Task }) {
               <SectionLabel className="mb-2 px-2">Description</SectionLabel>
               <textarea
                 rows={10}
+                readOnly={readOnly}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 onBlur={() =>
@@ -203,6 +209,7 @@ function TaskDetailBody({ task }: { task: Task }) {
           </div>
 
           <aside className="space-y-6">
+            <fieldset disabled={readOnly} className="space-y-6 disabled:opacity-60">
             <section>
               <SectionLabel className="mb-2">Status</SectionLabel>
               <StatusSelect
@@ -220,6 +227,7 @@ function TaskDetailBody({ task }: { task: Task }) {
                 onChange={(assigned_to) => commit({ assigned_to })}
               />
             </section>
+            </fieldset>
 
             <section className="space-y-2 border-t border-line pt-4 text-xs text-foreground-muted">
               <div className="flex justify-between gap-2">

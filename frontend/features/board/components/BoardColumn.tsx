@@ -16,6 +16,7 @@ interface BoardColumnProps {
   column: ColumnConfig;
   tasks: Task[];
   users?: User[];
+  readOnly?: boolean;
   onCreate: (title: string, status: TaskStatus) => void;
   onDelete: (id: number) => void;
   onOpen: (id: number) => void;
@@ -26,6 +27,7 @@ export function BoardColumn({
   column,
   tasks,
   users,
+  readOnly = false,
   onCreate,
   onDelete,
   onOpen,
@@ -51,13 +53,15 @@ export function BoardColumn({
           <Badge>{tasks.length}</Badge>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
-          <IconButton
-            label={`Add task to ${column.label}`}
-            size="sm"
-            onClick={() => openComposer(column.key)}
-          >
-            <Plus />
-          </IconButton>
+          {!readOnly && (
+            <IconButton
+              label={`Add task to ${column.label}`}
+              size="sm"
+              onClick={() => openComposer(column.key)}
+            >
+              <Plus />
+            </IconButton>
+          )}
           <IconButton label={`${column.label} options`} size="sm">
             <MoreHorizontal />
           </IconButton>
@@ -76,6 +80,7 @@ export function BoardColumn({
             key={task.id}
             task={task}
             users={users}
+            readOnly={readOnly}
             onDelete={onDelete}
             onOpen={onOpen}
             onAssigneeChange={onAssigneeChange}
@@ -88,7 +93,7 @@ export function BoardColumn({
           </p>
         )}
 
-        <AddTaskComposer status={column.key} onCreate={onCreate} />
+        {!readOnly && <AddTaskComposer status={column.key} onCreate={onCreate} />}
       </div>
     </section>
   );
