@@ -6,12 +6,15 @@ const config: Config = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './features/**/*.{js,ts,jsx,tsx,mdx}',
     './hooks/**/*.{js,ts,jsx,tsx,mdx}',
     './providers/**/*.{js,ts,jsx,tsx,mdx}',
     './store/**/*.{js,ts,jsx,tsx,mdx}',
-    // Required: the avatar palette (lib/utils.ts) and column dot/tint classes
-    // (lib/constants.ts) only ever appear as string literals here. Omit this
-    // and Tailwind purges them, rendering avatars as white text on nothing.
+    // Required: the avatar palette (lib/utils.ts) only ever appears as string
+    // literals there, and so do the column dot/tint classes in
+    // features/board/constants.ts. Omit a glob and Tailwind purges them,
+    // rendering avatars as white text on nothing. New top-level source
+    // folders must be added here.
     './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {

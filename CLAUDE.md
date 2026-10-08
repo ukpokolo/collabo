@@ -31,7 +31,7 @@ npm run build
 
 **All four processes are required for realtime to work.** Broadcasting is queued, so without `queue:work` the HTTP request still returns 200 and the event sits unsent in the `jobs` table.
 
-**Backend tests:** `cd backend && php artisan test` (PHPUnit, in-memory SQLite locally; CI runs them against Postgres). They cover auth, tasks/filters and channel authorization. **There is still no frontend test runner or ESLint config** — verify frontend changes with `npm run typecheck` and `npm run build`. `NotifyTaskCompleted` sleeps, so fake the bus in tests that move a task to `done`.
+**Backend tests:** `cd backend && php artisan test` (PHPUnit, in-memory SQLite locally; CI runs them against Postgres). They cover auth, tasks/filters and channel authorization. **There is still no frontend test runner.** Frontend checks are `npm run lint` (ESLint, including the layer-boundary rule below), `npm run typecheck` and `npm run build`; CI runs all three. `NotifyTaskCompleted` sleeps, so fake the bus in tests that move a task to `done`.
 
 ## Architecture
 
@@ -52,13 +52,30 @@ Things that are easy to break:
 - **`AppServiceProvider` pins `Relation::morphMap(['App\\Models\\User' => User::class])`.** `personal_access_tokens.tokenable_type` stores that legacy string for every token issued before `User` moved. Remove the map and every existing login returns 500 (`LoginTest` covers it).
 - **Queued jobs serialise class names.** Drain the queue (`queue:work --stop-when-empty`) before deploying a namespace move, or in-flight `TaskUpdated`/`NotifyTaskCompleted` jobs fail with a missing class. The wire event name is unaffected (`TaskUpdated::broadcastAs()` is explicit).
 
+### Frontend structure: feature folders
+
+```
+frontend/
+  app/            route files only
+  features/
+    auth/ tasks/ board/ presence/ users/
+      api.ts  keys.ts  types.ts  store.ts  hooks/  components/   (only what the feature needs)
+  components/ui/      shared primitives
+  components/layout/  app shell
+  hooks/              shared hooks (useDebounced, useDismissable)
+  lib/                http client, echo, token store, channels, utils
+  providers/  store/
+```
+
+Rule, enforced by ESLint (`no-restricted-imports`): shared code (`components/ui`, `lib`, `hooks`) **must not import from `features/`**. Anything both `lib` and a feature need (e.g. the token store) lives in `lib`. Query keys, types and constants belong to the feature that owns them.
+
 ### Auth is Bearer tokens, not cookies
 
 Frontend and API are deployed to separate origins, so Sanctum is used in **personal access token** mode. Consequences that are easy to break:
 
 - `BroadcastServiceProvider` registers `/broadcasting/auth` with **`auth:sanctum`**, not `web`. There is no session cookie on that request.
 - `lib/echo.ts` passes `Authorization: Bearer` in Echo's `auth.headers`.
-- `lib/api/http.ts` attaches the token and, on any 401, clears it so `AuthGuard` redirects instead of looping.
+- `lib/http.ts` attaches the token (stored by `lib/token.ts`) and, on any 401, clears it so `AuthGuard` redirects instead of looping.
 - `AuthGuard` is a convenience only. Every protected route sits behind `auth:sanctum` server-side.
 
 Signup issues **no token** until the emailed OTP is verified. OTPs are hashed (`OtpCode`), single-use, 10-minute TTL, 5-attempt cap. Auth endpoints use named rate limiters defined in `AppServiceProvider` — a plain `throttle:x,y` keys guests on domain+IP only, which would let one signup sequence lock the user out of every other auth endpoint.
@@ -72,10 +89,10 @@ Signup issues **no token** until the emailed OTP is verified. OTPs are hashed (`
 This is the rule to preserve:
 
 - **TanStack Query** is the single source of truth for tasks/users/session.
-- **Zustand** (`store/`) holds only drag state, composer state, filters, sidebar/mobile-nav flags, toasts. It deliberately stores **no task data**.
-- Inbound WebSocket events patch the *same* Query cache (`useTaskBroadcast`), so a remote change is indistinguishable from a local one.
+- **Zustand** (`features/*/store.ts`, plus `store/useToastStore.ts`) holds only drag state, composer state, filters, sidebar/mobile-nav flags, toasts. It deliberately stores **no task data**.
+- Inbound WebSocket events patch the *same* Query cache (`features/tasks/hooks/useTaskBroadcast`), so a remote change is indistinguishable from a local one.
 
-**Query key discipline matters here.** `QUERY_KEYS.tasks` (`['tasks']`) is a *prefix* that mutations sweep with `setQueriesData`. The detail query is rooted at `['task', id]` — a different root — because a key nested under `['tasks']` would be handed to a list updater, throw inside `onMutate`, and silently cancel the mutation with no request and no error. `patchLists` also guards with `Array.isArray`.
+**Query key discipline matters here.** `taskKeys.all` (`['tasks']`, in `features/tasks/keys.ts`) is a *prefix* that mutations sweep with `setQueriesData`. The detail query is rooted at `['task', id]` — a different root — because a key nested under `['tasks']` would be handed to a list updater, throw inside `onMutate`, and silently cancel the mutation with no request and no error. `patchLists` also guards with `Array.isArray`.
 
 ### Realtime flow
 
@@ -87,7 +104,7 @@ mutation → PUT /api/tasks/{id} → DB write → returns immediately
 
 - `TaskUpdated` broadcasts on a **`PrivateChannel`**; `routes/channels.php` authorizes it.
 - One `Broadcast::channel('board.{boardId}')` registration serves both private and presence: Laravel strips the `private-`/`presence-` prefix *before* matching, so registering `presence-board.{id}` is dead code.
-- `->toOthers()` only works because `lib/api/http.ts` sends `X-Socket-Id` from `getSocketId()`.
+- `->toOthers()` only works because `lib/http.ts` sends `X-Socket-Id` from `getSocketId()`.
 - On a `deleted` event the payload is **only `{ id }`** — the row is gone. `TaskUpdatedEvent` is a discriminated union; narrow on `type` before reading other fields.
 - In the hooks, use `echo.leaveChannel('private-board.1')`, **never** `echo.leave('board.1')` — the latter also tears down the presence channel the other hook owns.
 
@@ -99,7 +116,7 @@ mutation → PUT /api/tasks/{id} → DB write → returns immediately
 
 Colours are semantic CSS variables in `app/globals.css`, mapped to Tailwind names in `tailwind.config.ts` (`bg-surface`, `text-foreground-muted`, `border-line`, `bg-primary`, `bg-danger-soft`, …). Use those, not raw palette classes or hex.
 
-**`./lib/**` must stay in the Tailwind `content` globs.** The avatar palette (`lib/utils.ts`) and column dot/tint classes (`lib/constants.ts`) exist only as string literals there; drop the glob and Tailwind purges them, rendering avatars as white text on nothing.
+**Every source folder must be in the Tailwind `content` globs** (`app`, `components`, `features`, `hooks`, `lib`, `providers`, `store`). The avatar palette (`lib/utils.ts`) and column dot/tint classes (`features/board/constants.ts`) exist only as string literals; drop a glob and Tailwind purges them, rendering avatars as white text on nothing. `typecheck` and `build` do not catch this, so add the glob when you add a top-level folder.
 
 Shared primitives live in `components/ui/` (`Button`, `IconButton`, `Card`/`Badge`/`Skeleton`, `Avatar`/`AvatarStack`, `ErrorState`, `TextLink`). Reuse them rather than restyling inline. Popovers use the `useDismissable` hook.
 

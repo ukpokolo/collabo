@@ -1,0 +1,21 @@
+{
+  "extends": "next/core-web-vitals",
+  "overrides": [
+    {
+      "files": ["components/ui/**/*", "lib/**/*", "hooks/**/*"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/**"],
+                "message": "Shared code (components/ui, lib, hooks) must not depend on features. Move the shared piece down, or the dependent code into the feature."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
