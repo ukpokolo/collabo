@@ -147,6 +147,8 @@ mutation → PUT /api/tasks/{id} (policy: board role) → DB write → returns i
 - On a `deleted` event the payload is **only `{ id }`** — the row is gone. `TaskUpdatedEvent` is a discriminated union; narrow on `type` before reading other fields.
 - In the hooks, use `echo.leaveChannel('private-board.{id}')`, **never** `echo.leave('board.{id}')` — the latter also tears down the presence channel the other hook owns.
 
+**Reverb does not replay events a client missed**, so on every reconnect `useTaskBroadcast` invalidates the board's task lists and any open task (`taskKeys.board(id)` and `['task']`). Without that, a laptop that slept or a Reverb restart leaves the board stale until a manual reload; an outage drill (kill Reverb, write, restart) shows the missed task only appears because of it. Connection state lives in `features/realtime/store.ts` and `ConnectionBanner` (in `AppShell`) says "Live updates are paused" after a 3 s grace period. Broadcasts are queued (`ShouldBroadcast`), so with Reverb down a write still returns 201 and the failure stays in the queue worker; this relies on a worker process being up and on `QUEUE_CONNECTION` not being `sync` (with `sync`, a Reverb outage would 500 the write after it committed).
+
 ### Search and filtering are server-side
 
 `GET /api/boards/{board}/tasks` accepts `search`, `assigned_to` (comma-separated ids plus the literal `unassigned`), and `status`. `TaskController::index` escapes LIKE wildcards. The board never filters client-side; filters go into the query key and onto the URL, debounced 300 ms in `BoardView`.
