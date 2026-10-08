@@ -14,7 +14,7 @@ import { useTask, useUsers } from '@/features/tasks/hooks/useTask';
 import { useDeleteTask, useUpdateTask } from '@/features/tasks/hooks/useTasks';
 import { useTaskBroadcast } from '@/features/tasks/hooks/useTaskBroadcast';
 import { usePresence } from '@/features/presence/hooks/usePresence';
-import { ApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/http';
 import { relativeTime } from '@/lib/utils';
 import type { TaskStatus, UpdateTaskInput } from '@/features/tasks/types';
 

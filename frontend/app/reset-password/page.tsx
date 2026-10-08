@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { TextLink } from '@/components/ui/TextLink';
 import { authApi } from '@/features/auth/api';
-import { ApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/http';
 
 function ResetPasswordForm() {
   const router = useRouter();

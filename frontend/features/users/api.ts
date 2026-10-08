@@ -1,4 +1,4 @@
-import { http } from '@/lib/api/http';
+import { http } from '@/lib/http';
 import type { User } from '@/features/users/types';
 
 export const usersApi = {

@@ -1,4 +1,4 @@
-import { http } from '@/lib/api/http';
+import { http } from '@/lib/http';
 import type { CreateTaskInput, Task, TaskFilters, UpdateTaskInput } from '@/features/tasks/types';
 
 /** Turn the UI's filter state into the query string the API expects. */

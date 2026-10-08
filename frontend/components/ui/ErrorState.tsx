@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { ApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/http';
 import { cn } from '@/lib/utils';
 
 interface ErrorStateProps {

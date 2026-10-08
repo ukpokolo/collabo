@@ -9,7 +9,7 @@ import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { authApi } from '@/features/auth/api';
-import { ApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/http';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
