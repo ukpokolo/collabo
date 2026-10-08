@@ -90,6 +90,16 @@ Every task belongs to a board; a user sees only boards they are a member of. Rol
 - There is no all-users list. The assignee roster is `useBoardMembers()`.
 - Viewers get a read-only UI (no composer, drag, delete or editing). That is a courtesy; the API is what enforces it.
 
+### Feature flags
+
+Laravel Pennant on the app's own Postgres (no external service). Flags are defined from `backend/config/features.php`; a user gets one when it is `enabled`, they are on its `emails` allowlist, or they fall in its stable `percentage`. `GET /api/features` returns the signed-in user's flags; the frontend reads them with `useFlag('name')` / `<Gate flag="name">` (`features/flags`). Flags are **off while loading or on error**, and the query refetches on window focus.
+
+- **To add a flag:** add it to `config/features.php`; if the UI reads it, add the name to `frontend/features/flags/definitions.ts` (a typo then fails typecheck). The two lists are kept in sync by hand.
+- **Kill switch:** `php artisan features:set <flag> on|off|default [--user=email]`. Pennant stores each user's first result, so **editing a rule does not change anyone already resolved**; run `features:set <flag> default` to apply a changed rule.
+- `off`/`on` for everyone also writes a global override row (scope `__global__`). Pennant's own `*ForEveryone` only rewrites existing rows, so without the override a user who signs up after the switch would resolve from the rule and could get the feature back. `SetFeatureCommandTest` covers this.
+- Pennant scopes are stored with the morph alias (`Feature::useMorphMap()`), like Sanctum tokens, so a namespace move cannot orphan them.
+- Gate server behaviour with `Feature::for($request->user())->active('name')`; a hidden button alone is not a gate.
+
 ### Auth is Bearer tokens, not cookies
 
 Frontend and API are deployed to separate origins, so Sanctum is used in **personal access token** mode. Consequences that are easy to break:
