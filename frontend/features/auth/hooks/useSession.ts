@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi, type AuthSuccess } from '@/features/auth/api';
-import { clearToken, hasToken, setToken } from '@/features/auth/token';
+import { clearToken, hasToken, setToken } from '@/lib/token';
 import { disconnectEcho } from '@/lib/echo';
 import { sessionKeys } from '@/features/auth/keys';
 

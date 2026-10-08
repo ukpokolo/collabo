@@ -1,5 +1,5 @@
 import { getSocketId } from '@/lib/echo';
-import { clearToken, getToken } from '@/features/auth/token';
+import { clearToken, getToken } from '@/lib/token';
 
 export class ApiError extends Error {
   constructor(
