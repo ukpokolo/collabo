@@ -23,6 +23,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="SANCTUM_STATEFUL_DOMAINS" value=""/>
         <!-- Local default. CI exports DB_CONNECTION=pgsql, which wins over these. -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>

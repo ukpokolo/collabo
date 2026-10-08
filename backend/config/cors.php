@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'broadcasting/auth', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'broadcasting/auth'],
 
     'allowed_methods' => ['*'],
 
@@ -29,6 +29,7 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    // Auth is a Bearer header, never a cookie, so credentialed requests are not needed.
+    'supports_credentials' => false,
 
 ];

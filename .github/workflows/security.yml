@@ -1,0 +1,37 @@
+name: Security audit
+
+# Kept separate from the build workflows on purpose: a newly published advisory
+# should show up here, not fail an unrelated pull request.
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  push:
+    branches: [main]
+    paths: ['backend/composer.lock', 'frontend/package-lock.json', '.github/workflows/security.yml']
+  pull_request:
+    paths: ['backend/composer.lock', 'frontend/package-lock.json', '.github/workflows/security.yml']
+  workflow_dispatch:
+
+jobs:
+  composer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      # --locked audits what composer.lock pins, not whatever happens to be installed.
+      - run: composer audit --locked --no-interaction
+        working-directory: backend
+
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Production dependencies only; build tooling advisories are reported by `npm audit` locally.
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: frontend

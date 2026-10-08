@@ -45,7 +45,7 @@ class LoginController extends Controller
 
         return response()->json([
             'user' => $user->only('id', 'name', 'email'),
-            'token' => $user->createToken('collabo')->plainTextToken,
+            'token' => $user->issueToken(),
         ]);
     }
 
