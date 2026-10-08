@@ -1,6 +1,6 @@
 # One image, three start commands: API, queue worker, Reverb.
 # Render has no native PHP runtime, so Laravel must ship as a container.
-FROM php:8.3-cli-alpine
+FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache postgresql-dev linux-headers $PHPIZE_DEPS \
     && docker-php-ext-install -j"$(nproc)" pdo_pgsql pcntl sockets bcmath \
