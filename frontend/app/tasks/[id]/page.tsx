@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { AppShell } from '@/components/layout/AppShell';
 import { TaskDetail } from '@/components/task/TaskDetail';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';

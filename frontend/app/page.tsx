@@ -1,4 +1,4 @@
-import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { AppShell } from '@/components/layout/AppShell';
 import { BoardView } from '@/components/board/BoardView';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';

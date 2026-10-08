@@ -3,8 +3,8 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { AuthLayout } from '@/components/auth/AuthLayout';
-import { OtpInput } from '@/components/auth/OtpInput';
+import { AuthLayout } from '@/features/auth/components/AuthLayout';
+import { OtpInput } from '@/features/auth/components/OtpInput';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
