@@ -2,6 +2,7 @@
 
 namespace App\Domain\Tasks\Models;
 
+use App\Domain\Boards\Models\Board;
 use App\Domain\Users\Models\User;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -52,6 +53,11 @@ class Task extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function board()
+    {
+        return $this->belongsTo(Board::class);
     }
 
     /**
