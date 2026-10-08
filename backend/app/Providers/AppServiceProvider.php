@@ -6,6 +6,7 @@ use App\Domain\Users\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Console\ServeCommand;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         // with future namespace moves.
         Relation::morphMap(['App\\Models\\User' => User::class]);
 
+        if ($proxies = config('app.trusted_proxies')) {
+            TrustProxies::at($proxies);
+        }
+
         $this->configureRateLimiting();
     }
 
@@ -48,21 +53,36 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('board-members', fn (Request $request) => Limit::perMinute(20)
             ->by((string) $request->user()?->id));
 
-        RateLimiter::for('auth-login', fn (Request $request) => Limit::perMinute(5)
-            ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        // Every limit below pairs an IP-keyed bucket with one keyed on the address
+        // alone. With forwarded headers trusted a client can invent its IP, so the
+        // address-only bucket is what actually bounds guessing and mail volume. The
+        // cost is that someone can burn a victim's bucket and briefly block them;
+        // these windows are short for that reason.
+        $address = fn (Request $request) => strtolower((string) $request->input('email'));
+
+        RateLimiter::for('auth-login', fn (Request $request) => [
+            Limit::perMinute(5)->by($address($request).'|'.$request->ip()),
+            Limit::perMinutes(15, 20)->by('login-address|'.$address($request)),
+        ]);
 
         // Per IP, and per address: the response is the same for new and existing
         // accounts, so without the second limit this could be used to mail one
         // person repeatedly.
         RateLimiter::for('auth-register', fn (Request $request) => [
             Limit::perMinute(5)->by($request->ip()),
-            Limit::perHour(5)->by('email|'.strtolower((string) $request->input('email'))),
+            Limit::perHour(5)->by('register-address|'.$address($request)),
         ]);
 
-        RateLimiter::for('auth-verify', fn (Request $request) => Limit::perMinute(10)
-            ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        // Each code allows 5 tries, so unlimited new codes would allow unlimited
+        // guesses at a 6-digit number; the address-only buckets close that.
+        RateLimiter::for('auth-verify', fn (Request $request) => [
+            Limit::perMinute(10)->by($address($request).'|'.$request->ip()),
+            Limit::perMinutes(15, 30)->by('verify-address|'.$address($request)),
+        ]);
 
-        RateLimiter::for('auth-send-code', fn (Request $request) => Limit::perMinute(3)
-            ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        RateLimiter::for('auth-send-code', fn (Request $request) => [
+            Limit::perMinute(3)->by($address($request).'|'.$request->ip()),
+            Limit::perHour(10)->by('code-address|'.$address($request)),
+        ]);
     }
 }
