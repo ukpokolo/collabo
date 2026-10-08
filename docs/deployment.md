@@ -147,6 +147,14 @@ pg_dump "$DB_URL" --no-owner -Fc -f collabo-$(date +%F).dump
 
 The database contains email addresses and password hashes: do not put dumps in a public place or a public repository's artifacts.
 
+## Logs and monitoring
+
+**Logs.** The API and Reverb write one JSON object per line to stderr, which Render shows under *Logs*. Every line from a request carries `request_id`, and `user_id` once the user is known. Every response, including errors, has an `X-Request-Id` header (visible in the browser's Network tab). So a report like "the board failed to save at 14:03" becomes: open the failing request, copy its `X-Request-Id`, search the logs for it.
+
+**Uptime monitoring: be careful on free plans.** The obvious setup, pinging `/up` every five minutes, would keep the API awake all month. One service awake 24/7 uses about 744 of the 750 shared free instance-hours, and the constant database polling by the queue worker would keep Neon's compute awake too and use up its 100 compute-hours. Monitor the **frontend** (Vercel) instead, which does not wake anything, and use `node scripts/smoke.mjs` to check the whole stack on demand.
+
+**Error tracking is not wired in.** Errors are in the logs, but nothing alerts you. When you want that, Sentry has a free plan: `composer require sentry/sentry-laravel` and `php artisan sentry:publish --dsn=…` for the API, and `@sentry/nextjs` for the frontend (add the Sentry ingest host to `connect-src` in `frontend/next.config.mjs`, or the CSP will block the reports). Check what the reports contain before enabling it: they can include request data and user ids.
+
 ## Troubleshooting
 
 | Symptom | Likely cause |

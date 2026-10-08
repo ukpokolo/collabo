@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\AddUserContext;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -60,6 +61,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [AddUserContext::class],
         ],
 
         'daily' => [
@@ -68,6 +70,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [AddUserContext::class],
         ],
 
         'slack' => [
@@ -100,6 +103,7 @@ return [
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
+            'tap' => [AddUserContext::class],
         ],
 
         'syslog' => [

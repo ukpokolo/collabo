@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddRequestContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([__DIR__.'/../app/Domain/Features/Console'])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(AddRequestContext::class);
+
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
         ]);
