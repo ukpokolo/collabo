@@ -1,0 +1,74 @@
+name: Backend
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**', '.github/workflows/backend.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/backend.yml']
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: collabo_test
+          POSTGRES_USER: collabo
+          POSTGRES_PASSWORD: secret
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U collabo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: collabo_test
+      DB_USERNAME: collabo
+      DB_PASSWORD: secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pcntl, sockets, bcmath
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - run: composer install --prefer-dist --no-interaction --no-progress
+
+      - run: cp .env.example .env && php artisan key:generate
+
+      - name: Code style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Syntax check
+        run: find app routes config database -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+      - name: Migrate
+        run: php artisan migrate --force
+
+      - name: Routes load
+        run: php artisan route:list > /dev/null
