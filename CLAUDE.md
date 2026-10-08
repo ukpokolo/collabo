@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Collabo is a real-time kanban board: a Laravel 12 API (`backend/`) and a Next.js 14 App Router frontend (`frontend/`), connected by Laravel Reverb WebSockets.
+Collabo is a real-time kanban board: a Laravel 12 API (`backend/`) and a Next.js 15 (React 19) App Router frontend (`frontend/`), connected by Laravel Reverb WebSockets.
 
 This file is the only current documentation. The original scaffold's `README.md` files and `LEARNING.md` were removed because they described a superseded design (Laravel 11, a public `board.1` channel, no authentication).
 
@@ -101,6 +101,14 @@ Frontend and API are deployed to separate origins, so Sanctum is used in **perso
 
 Signup issues **no token** until the emailed OTP is verified. OTPs are hashed (`OtpCode`), single-use, 10-minute TTL, 5-attempt cap. Auth endpoints use named rate limiters defined in `AppServiceProvider` — a plain `throttle:x,y` keys guests on domain+IP only, which would let one signup sequence lock the user out of every other auth endpoint.
 
+### Security posture
+
+- **Tokens expire** (14 days, `SANCTUM_TOKEN_EXPIRATION`); `User::issueToken()` prunes that user's expired tokens at sign-in and caps an account at 20, so no scheduler is needed. Sanctum has **no stateful domains**: this is a Bearer-only API, and CORS has `supports_credentials` off. Don't add cookie/session auth paths.
+- **Sign-up reveals nothing.** `POST /api/auth/register` returns the same 201 for a new, unverified or already-registered address, hashes the password in every case (no timing tell), and emails existing owners instead (`AccountExistsMail`). Don't add a `unique:users,email` rule back to `RegisterRequest`; that is the leak. Limited per IP and per address.
+- **The frontend sets a CSP and security headers** (`next.config.mjs`). The token is in `localStorage`, so `connect-src` (self + the Reverb origin) is the directive that matters: it stops an injected script sending the token elsewhere. If you add a new origin the browser must reach (analytics, an image CDN, a different Reverb host), add it there or it is blocked. `script-src` keeps `'unsafe-inline'` for Next's bootstrap; revisit with nonces if pages ever render user-supplied HTML.
+- **Dependencies:** `.github/workflows/security.yml` runs `composer audit --locked` and `npm audit --omit=dev` weekly and on lock-file changes. Next 14 reached the end of fixes (its advisories are only fixed from 15.5.24), hence Next 15. Route `params` are Promises in Next 15 (`await params` in server pages).
+- `.env.example` defaults `APP_DEBUG=false`; set it to true locally only if you want the debug pages.
+
 ### Requests are same-origin via Next rewrites
 
 `next.config.mjs` proxies `/api/*` and `/broadcasting/auth` to `NEXT_PUBLIC_API_URL`. All frontend fetches use **relative paths** so the same code works locally and deployed. Don't introduce absolute API URLs.
@@ -159,4 +167,3 @@ Vercel cannot run Laravel, Reverb, or the queue worker. The intended split is Ne
 
 **SQLite will not work there** — Render's disk is ephemeral and the separate services cannot share a file. Postgres is required; it's a `.env` change since Eloquent abstracts the driver.
 
-`next@14.2.5` has a published security advisory and should be upgraded.
