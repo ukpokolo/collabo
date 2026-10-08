@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Domain\Tasks\Jobs;
 
-use App\Models\Task;
+use App\Domain\Tasks\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

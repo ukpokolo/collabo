@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domain\Tasks\Http\Controllers;
 
-use App\Events\TaskUpdated;
-use App\Jobs\NotifyTaskCompleted;
-use App\Models\Task;
+use App\Domain\Tasks\Events\TaskUpdated;
+use App\Domain\Tasks\Jobs\NotifyTaskCompleted;
+use App\Domain\Tasks\Models\Task;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Domain\Tasks\Models;
 
+use App\Models\User;
+use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +22,12 @@ class Task extends Model
         self::STATUS_IN_PROGRESS,
         self::STATUS_DONE,
     ];
+
+    // Factory discovery is namespace-based and does not know about Domain/.
+    protected static function newFactory(): TaskFactory
+    {
+        return TaskFactory::new();
+    }
 
     /**
      * The attributes that are mass assignable.

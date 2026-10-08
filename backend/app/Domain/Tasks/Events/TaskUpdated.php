@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Events;
+namespace App\Domain\Tasks\Events;
 
-use App\Models\Task;
+use App\Domain\Tasks\Models\Task;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;

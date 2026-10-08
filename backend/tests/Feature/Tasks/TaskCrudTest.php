@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Tasks;
 
-use App\Events\TaskUpdated;
-use App\Jobs\NotifyTaskCompleted;
-use App\Models\Task;
+use App\Domain\Tasks\Events\TaskUpdated;
+use App\Domain\Tasks\Jobs\NotifyTaskCompleted;
+use App\Domain\Tasks\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
