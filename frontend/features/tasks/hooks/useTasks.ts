@@ -29,12 +29,41 @@ function applyPatch(task: Task, input: UpdateTaskInput, users: BoardMember[] | u
   return next;
 }
 
+/** Tasks fetched per request. */
+export const PAGE_SIZE = 200;
+
+/** Most tasks one board view loads; past this the board shows a notice. */
+export const MAX_TASKS_LOADED = 1000;
+
+/** Newest activity first, which is how the board and the realtime patches expect them. */
+function byRecency(a: Task, b: Task): number {
+  return b.updated_at.localeCompare(a.updated_at) || b.id - a.id;
+}
+
+/**
+ * The API pages by id so a task edited while we load can't be skipped; we
+ * follow the cursor until everything is in (or the cap), then sort here. The
+ * cache still holds a plain Task[], so the optimistic updates are unchanged.
+ */
+async function loadTasks(boardId: number, filters: TaskFilters, signal?: AbortSignal) {
+  const all: Task[] = [];
+  let cursor: string | null = null;
+
+  do {
+    const page = await tasksApi.list(boardId, filters, { cursor, limit: PAGE_SIZE }, signal);
+    all.push(...page.data);
+    cursor = page.has_more ? page.next_cursor : null;
+  } while (cursor && all.length < MAX_TASKS_LOADED);
+
+  return all.sort(byRecency);
+}
+
 export function useTasks(filters: TaskFilters = {}) {
   const boardId = useBoardId();
 
   return useQuery({
     queryKey: taskKeys.filtered(boardId, filters),
-    queryFn: ({ signal }) => tasksApi.list(boardId, filters, signal),
+    queryFn: ({ signal }) => loadTasks(boardId, filters, signal),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (previous) => previous,

@@ -16,6 +16,10 @@ use Laravel\Pennant\Feature;
 
 class TaskController extends Controller
 {
+    private const DEFAULT_PAGE_SIZE = 100;
+
+    private const MAX_PAGE_SIZE = 200;
+
     public function index(Request $request, Board $board): JsonResponse
     {
         $this->authorize('view', $board);
@@ -24,9 +28,10 @@ class TaskController extends Controller
             'search' => ['nullable', 'string', 'max:255'],
             'assigned_to' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'in:'.implode(',', Task::STATUSES)],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:'.self::MAX_PAGE_SIZE],
         ]);
 
-        $tasks = $board->tasks()
+        $page = $board->tasks()
             ->with('assignee')
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 // Escape LIKE wildcards with an explicit ESCAPE character:
@@ -54,10 +59,17 @@ class TaskController extends Controller
                 });
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->orderByDesc('updated_at')
-            ->get();
+            // Keyset-paged on the primary key, which never changes: paging on
+            // updated_at would let a task edited mid-load jump between pages and
+            // be missed. Clients sort by recency themselves.
+            ->orderByDesc('id')
+            ->cursorPaginate($filters['limit'] ?? self::DEFAULT_PAGE_SIZE);
 
-        return response()->json($tasks);
+        return response()->json([
+            'data' => $page->items(),
+            'next_cursor' => $page->nextCursor()?->encode(),
+            'has_more' => $page->hasMorePages(),
+        ]);
     }
 
     public function store(Request $request, Board $board): JsonResponse
@@ -105,7 +117,7 @@ class TaskController extends Controller
         $task->load('assignee');
 
         if ($task->status === Task::STATUS_DONE && ! $wasDone && Feature::for($request->user())->active('notify-on-complete')) {
-            NotifyTaskCompleted::dispatch($task);
+            NotifyTaskCompleted::dispatch($task, $request->user()->id);
         }
 
         broadcast(new TaskUpdated($task, 'updated', $task->board_id))->toOthers();

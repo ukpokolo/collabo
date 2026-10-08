@@ -151,6 +151,8 @@ mutation → PUT /api/tasks/{id} (policy: board role) → DB write → returns i
 
 `GET /api/boards/{board}/tasks` accepts `search`, `assigned_to` (comma-separated ids plus the literal `unassigned`), and `status`. `TaskController::index` escapes LIKE wildcards. The board never filters client-side; filters go into the query key and onto the URL, debounced 300 ms in `BoardView`.
 
+**The task list is paged.** The response is `{ data, next_cursor, has_more }` (default 100, max 200 per page, `limit` to change it), keyset-paged on **`id`**, newest id first. Do not page on `updated_at`: a task edited while the board loads would jump past the cursor and go missing (`TaskPaginationTest` shows 5 of 6 tasks come back that way). The frontend (`loadTasks` in `useTasks`) follows the cursor up to `MAX_TASKS_LOADED` (1,000), sorts by recency itself, and keeps a plain `Task[]` in the cache so the optimistic updates need no pagination awareness; past the cap the board shows a notice. Assignees are eager loaded; a test pins the query count so an N+1 can't creep in.
+
 ### Styling
 
 Colours are semantic CSS variables in `app/globals.css`, mapped to Tailwind names in `tailwind.config.ts` (`bg-surface`, `text-foreground-muted`, `border-line`, `bg-primary`, `bg-danger-soft`, …). Use those, not raw palette classes or hex.
