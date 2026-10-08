@@ -30,6 +30,8 @@ jobs:
       # frontend/.npmrc blanks the proxy settings; CI has direct access.
       - run: npm ci
 
+      - run: npm run lint
+
       - run: npm run typecheck
 
       - run: npm run build

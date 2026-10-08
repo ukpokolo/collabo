@@ -3,7 +3,7 @@
 import { ChevronDown, LogOut } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { useDismissable } from '@/hooks/useDismissable';
-import { useLogout, useSession } from '@/hooks/useSession';
+import { useLogout, useSession } from '@/features/auth/hooks/useSession';
 
 export function UserMenu() {
   const { user } = useSession();

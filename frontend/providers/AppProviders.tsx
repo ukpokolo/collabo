@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/Toaster';
 import { describeError } from '@/components/ui/ErrorState';
-import { ApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/http';
 import { toast } from '@/store/useToastStore';
 
 export function AppProviders({ children }: { children: ReactNode }) {

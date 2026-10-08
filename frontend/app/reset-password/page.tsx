@@ -3,14 +3,14 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { AuthLayout } from '@/components/auth/AuthLayout';
-import { OtpInput } from '@/components/auth/OtpInput';
+import { AuthLayout } from '@/features/auth/components/AuthLayout';
+import { OtpInput } from '@/features/auth/components/OtpInput';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { TextLink } from '@/components/ui/TextLink';
-import { authApi } from '@/lib/api/auth';
-import { ApiError } from '@/lib/api/http';
+import { authApi } from '@/features/auth/api';
+import { ApiError } from '@/lib/http';
 
 function ResetPasswordForm() {
   const router = useRouter();
