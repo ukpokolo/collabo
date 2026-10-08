@@ -33,6 +33,10 @@ services:
         value: false
       - key: LOG_CHANNEL
         value: stderr
+      # One JSON object per line, with request_id and user_id, so Render's log
+      # search can follow a single request (see docs/deployment.md).
+      - key: LOG_STDERR_FORMATTER
+        value: Monolog\Formatter\JsonFormatter
       - key: LOG_LEVEL
         value: warning
       # php artisan key:generate --show   (starts with "base64:")
@@ -120,6 +124,8 @@ services:
         value: false
       - key: LOG_CHANNEL
         value: stderr
+      - key: LOG_STDERR_FORMATTER
+        value: Monolog\Formatter\JsonFormatter
       - key: APP_KEY
         fromService: { type: web, name: collabo-api, envVarKey: APP_KEY }
       - key: REVERB_APP_ID
