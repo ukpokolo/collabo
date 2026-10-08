@@ -1,0 +1,51 @@
+name: End-to-end
+
+# The real API, queue worker, Reverb and the production frontend build, driven by
+# a headless browser. See e2e/README.md.
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**', 'frontend/**', 'e2e/**', 'scripts/**', '.github/workflows/e2e.yml']
+  pull_request:
+    paths: ['backend/**', 'frontend/**', 'e2e/**', 'scripts/**', '.github/workflows/e2e.yml']
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, sqlite3, pcntl, sockets, bcmath
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+
+      - run: composer install --prefer-dist --no-interaction --no-progress
+        working-directory: backend
+
+      - run: npm ci
+        working-directory: frontend
+
+      - run: npm ci
+        working-directory: e2e
+
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+
+      - run: node run.mjs
+        working-directory: e2e
