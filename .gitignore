@@ -7,3 +7,6 @@ Thumbs.db
 .fleet/
 .zed/
 *.swp
+
+# End-to-end suite dependencies
+e2e/node_modules/
