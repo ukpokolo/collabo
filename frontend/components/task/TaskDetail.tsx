@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Trash2 } from 'lucide-react';
-import { AssigneePicker } from '@/components/ui/AssigneePicker';
+import { AssigneePicker } from '@/features/users/components/AssigneePicker';
 import { StatusSelect } from '@/components/ui/StatusSelect';
 import { PresenceStack } from '@/components/layout/PresenceStack';
 import { Button } from '@/components/ui/Button';

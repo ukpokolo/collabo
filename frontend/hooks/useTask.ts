@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
-import { usersApi } from '@/lib/api/users';
+import { usersApi } from '@/features/users/api';
 import { QUERY_KEYS } from '@/lib/constants';
 
 /** A single task, for the detail page. */

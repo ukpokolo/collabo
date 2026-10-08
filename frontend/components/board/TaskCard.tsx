@@ -5,7 +5,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { MessageSquare, Paperclip, Trash2, UserCircle2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
-import { AssigneePicker } from '@/components/ui/AssigneePicker';
+import { AssigneePicker } from '@/features/users/components/AssigneePicker';
 import { IconButton } from '@/components/ui/IconButton';
 import { cn, relativeTime } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
