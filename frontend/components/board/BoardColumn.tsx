@@ -2,8 +2,8 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { MoreHorizontal, Plus } from 'lucide-react';
-import { TaskCard } from '@/components/board/TaskCard';
-import { AddTaskComposer } from '@/components/board/AddTaskComposer';
+import { TaskCard } from '@/features/tasks/components/TaskCard';
+import { AddTaskComposer } from '@/features/tasks/components/AddTaskComposer';
 import { Badge } from '@/components/ui/Surface';
 import { IconButton } from '@/components/ui/IconButton';
 import { useBoardStore } from '@/store/useBoardStore';

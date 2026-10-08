@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { AppShell } from '@/components/layout/AppShell';
-import { TaskDetail } from '@/components/task/TaskDetail';
+import { TaskDetail } from '@/features/tasks/components/TaskDetail';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function TaskDetailPage({ params }: { params: { id: string } }) {

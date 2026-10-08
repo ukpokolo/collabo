@@ -14,7 +14,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { BoardColumn } from '@/components/board/BoardColumn';
-import { TaskCardView } from '@/components/board/TaskCard';
+import { TaskCardView } from '@/features/tasks/components/TaskCard';
 import { Skeleton } from '@/components/ui/Surface';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { COLUMNS } from '@/lib/constants';
