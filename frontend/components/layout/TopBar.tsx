@@ -7,16 +7,27 @@ import { AssigneeFilter } from '@/features/board/components/AssigneeFilter';
 import { BoardSwitcher } from '@/features/board/components/BoardSwitcher';
 import { IconButton } from '@/components/ui/IconButton';
 import { useBoardStore } from '@/features/board/store';
+import { useFlags } from '@/features/flags/hooks/useFlag';
+import type { FlagName } from '@/features/flags/definitions';
 import { cn } from '@/lib/utils';
 
-const VIEWS = [
+// List and Calendar are placeholders with nothing behind them; each stays hidden
+// until its flag is on.
+const VIEWS: ReadonlyArray<{
+  icon: typeof LayoutGrid;
+  label: string;
+  active?: boolean;
+  flag?: FlagName;
+}> = [
   { icon: LayoutGrid, label: 'Board', active: true },
-  { icon: List, label: 'List' },
-  { icon: CalendarDays, label: 'Calendar' },
-] as const;
+  { icon: List, label: 'List', flag: 'list-view' },
+  { icon: CalendarDays, label: 'Calendar', flag: 'calendar-view' },
+];
 
 export function TopBar({ searching = false }: { searching?: boolean }) {
   const { search, setSearch, setMobileNavOpen } = useBoardStore();
+  const { data: flags } = useFlags();
+  const views = VIEWS.filter((view) => !view.flag || flags?.[view.flag] === true);
 
   return (
     <header className="shrink-0 border-b border-line bg-surface">
@@ -41,8 +52,7 @@ export function TopBar({ searching = false }: { searching?: boolean }) {
 
       <div className="flex flex-col gap-2 border-t border-line px-3 py-2 sm:px-5 lg:h-12 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="no-scrollbar -mx-1 flex items-center gap-1 overflow-x-auto px-1">
-          {VIEWS.map(({ icon: Icon, label, ...rest }) => {
-            const active = 'active' in rest && rest.active;
+          {views.map(({ icon: Icon, label, active }) => {
             return (
               <button
                 key={label}

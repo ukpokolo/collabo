@@ -10,6 +10,7 @@ use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 
 class TaskCrudTest extends TestCase
@@ -97,8 +98,18 @@ class TaskCrudTest extends TestCase
         Bus::assertNotDispatched(NotifyTaskCompleted::class);
     }
 
-    public function test_moving_to_done_dispatches_the_completion_job_once(): void
+    public function test_completion_job_is_off_by_default_behind_its_flag(): void
     {
+        $task = Task::factory()->create(['board_id' => $this->board->id, 'status' => Task::STATUS_IN_PROGRESS]);
+
+        $this->putJson("/api/tasks/{$task->id}", ['status' => Task::STATUS_DONE])->assertOk();
+
+        Bus::assertNotDispatched(NotifyTaskCompleted::class);
+    }
+
+    public function test_moving_to_done_dispatches_the_completion_job_once_when_the_flag_is_on(): void
+    {
+        Feature::for($this->user)->activate('notify-on-complete');
         $task = Task::factory()->create(['board_id' => $this->board->id, 'status' => Task::STATUS_IN_PROGRESS]);
 
         $this->putJson("/api/tasks/{$task->id}", ['status' => Task::STATUS_DONE])->assertOk();
