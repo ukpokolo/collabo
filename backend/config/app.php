@@ -65,6 +65,27 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Trusted Proxies
+    |--------------------------------------------------------------------------
+    |
+    | Behind a load balancer (Render, a CDN) the connecting address is the
+    | proxy's, so every client would share one IP, and every IP-keyed rate
+    | limit with it. Set TRUSTED_PROXIES to "*" or a comma-separated list to
+    | read the real client from X-Forwarded-For. Unset (the default) trusts
+    | nobody, which is right when nothing sits in front of the app.
+    |
+    | A client can send its own X-Forwarded-For, which a trust-everything
+    | setting believes, so no limit may rely on the IP alone: see the
+    | per-address limiters in AppServiceProvider.
+    |
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES')
+        ? (env('TRUSTED_PROXIES') === '*' ? '*' : array_map('trim', explode(',', env('TRUSTED_PROXIES'))))
+        : null,
+
     'frontend_url' => env('APP_FRONTEND_URL', 'http://localhost:3000'),
 
     /*

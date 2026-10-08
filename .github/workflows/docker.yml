@@ -1,0 +1,111 @@
+name: Docker image
+
+# Builds the production image exactly as Render does and boots both roles, so a
+# broken Dockerfile (a missing PHP extension, a bad start script) fails a PR
+# instead of a deploy.
+on:
+  push:
+    branches: [main]
+    paths: ['backend/Dockerfile', 'backend/docker/**', 'backend/composer.*', 'backend/.dockerignore', '.github/workflows/docker.yml']
+  pull_request:
+    paths: ['backend/Dockerfile', 'backend/docker/**', 'backend/composer.*', 'backend/.dockerignore', '.github/workflows/docker.yml']
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: collabo
+          POSTGRES_USER: collabo
+          POSTGRES_PASSWORD: secret
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U collabo -d collabo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          load: true
+          tags: collabo-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Required PHP extensions are installed
+        run: |
+          modules="$(docker run --rm --entrypoint php collabo-backend:ci -m)"
+          for ext in pdo_pgsql pcntl sockets bcmath; do
+            echo "$modules" | grep -qix "$ext" || { echo "::error::missing PHP extension: $ext"; exit 1; }
+          done
+          docker run --rm --entrypoint php collabo-backend:ci -v
+
+      - name: The image runs as a non-root user
+        run: |
+          uid="$(docker run --rm --entrypoint id collabo-backend:ci -u)"
+          test "$uid" != "0" || { echo "::error::container runs as root"; exit 1; }
+
+      - name: API role migrates against Postgres, serves, and runs a worker
+        run: |
+          docker run -d --name api --network host \
+            -e APP_KEY="$APP_KEY" -e APP_URL=http://localhost:8000 -e PORT=8000 \
+            -e DB_CONNECTION=pgsql -e DB_HOST=127.0.0.1 -e DB_PORT=5432 \
+            -e DB_DATABASE=collabo -e DB_USERNAME=collabo -e DB_PASSWORD=secret \
+            -e CACHE_STORE=file -e SESSION_DRIVER=array -e QUEUE_CONNECTION=database \
+            -e BROADCAST_CONNECTION=log -e MAIL_MAILER=log \
+            collabo-backend:ci
+
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:8000/up >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:8000/up >/dev/null || { docker logs api; echo "::error::API did not come up"; exit 1; }
+
+          # Unauthenticated JSON requests are refused, not redirected or 500ing.
+          code="$(curl -s -o /dev/null -w '%{http_code}' -H 'Accept: application/json' http://localhost:8000/api/boards)"
+          test "$code" = "401" || { docker logs api; echo "::error::expected 401, got $code"; exit 1; }
+
+          # Sign-up exercises the database, the mailer and the validation stack.
+          code="$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/api/auth/register \
+            -H 'Content-Type: application/json' -H 'Accept: application/json' \
+            -d '{"name":"CI","email":"ci@example.com","password":"secret123","password_confirmation":"secret123"}')"
+          test "$code" = "201" || { docker logs api; echo "::error::register returned $code"; exit 1; }
+
+          # The queue worker must be running inside the same container.
+          docker exec api sh -c 'ps -o args | grep -q "[q]ueue:work"' || { docker logs api; echo "::error::no queue worker"; exit 1; }
+
+          # The server must not advertise itself.
+          if curl -sI http://localhost:8000/up | grep -qi '^server:'; then echo "::error::Server header is exposed"; exit 1; fi
+
+      - name: Reverb role starts and listens
+        run: |
+          docker run -d --name reverb --network host \
+            -e APP_KEY="$APP_KEY" -e PORT=8080 \
+            -e REVERB_APP_ID=collabo -e REVERB_APP_KEY=collabo-key -e REVERB_APP_SECRET=collabo-secret \
+            -e REVERB_ALLOWED_ORIGINS=localhost \
+            --entrypoint start-reverb.sh collabo-backend:ci
+
+          for i in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/8080) 2>/dev/null && exit 0
+            sleep 1
+          done
+          docker logs reverb
+          echo "::error::Reverb never started listening"
+          exit 1
